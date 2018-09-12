@@ -65,7 +65,6 @@ void comment_init()
 		// we are changing comments
 		// don't do anything..
 		layer_mark_dirty(comment_header_layer);
-
 		text_layer_destroy(comment_body_layer);
 				comment_body_layer = text_layer_create(GRect(0, 36, window_frame.size.w, 10000));
 				text_layer_set_font(comment_body_layer, GetFont());
@@ -141,11 +140,9 @@ void comment_window_load(Window *window)
 	layer_set_update_proc(comment_header_layer, comment_header_layer_update_proc);
 	scroll_layer_add_child(comment_scroll_layer, comment_header_layer);
 
-
 	comment_body_layer = text_layer_create(GRect(0, 36, window_frame.size.w, 10000));
 	text_layer_set_font(comment_body_layer, GetFont());
 	text_layer_set_text(comment_body_layer, current_thread.comment);
-
 
 	scroll_layer_add_child(comment_scroll_layer, text_layer_get_layer(comment_body_layer));
 
@@ -288,12 +285,4 @@ static void comment_auto_resize_body()
 	size.h += 5;
 	text_layer_set_size(comment_body_layer, size);
 	scroll_layer_set_content_size(comment_scroll_layer, GSize(window_frame.size.w, THREAD_WINDOW_HEIGHT + size.h + 5));
-}
-
-TextLayer* comment_body_layer_create()
-{
-	TextLayer *comment_body_layer = text_layer_create(GRect(0, THREAD_WINDOW_HEIGHT, window_frame.size.w, 10000));
-	text_layer_set_font(comment_body_layer, GetFont());
-	text_layer_set_text(comment_body_layer, current_thread.comment);
-	return comment_body_layer;
 }

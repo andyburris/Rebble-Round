@@ -371,19 +371,13 @@ void init_netimage(int index)
 {
 	DEBUG_MSG("init_netimage %d", index);
 	free_netimage();
-	netimage_ctx = netimage_create_context(callback_netimage, index);
+	netimage_ctx = netimage_create_context(callback_netimage);
 	netimage_request(index);
 }
 
-void callback_netimage(int index, GBitmap *image)
+void callback_netimage(GBitmap *image)
 {
 	DEBUG_MSG("callback_netimage");
-	
-	if(index != GetSelectedThreadID()) {
-		DEBUG_MSG("prevented loading old thread");
-		return;
-	}
-	
 	thread_display_image(image);
 }
 

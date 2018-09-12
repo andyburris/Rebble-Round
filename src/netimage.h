@@ -15,7 +15,7 @@
 /* The key used to request a PBI */
 #define NETIMAGE_URL NETIMAGE_DATA + 4
 
-typedef void (*NetImageCallback)(int threadId, GBitmap *image);
+typedef void (*NetImageCallback)(GBitmap *image);
 
 typedef struct
 {
@@ -25,14 +25,11 @@ typedef struct
 	uint8_t *data;
 	/* Next byte to write */
 	uint32_t index;
-	
-	int threadId;
-	
 	/* Callback to call when we are done loading the image */
 	NetImageCallback callback;
 } NetImageContext;
 
-NetImageContext *netimage_create_context(NetImageCallback callback, int threadId);
+NetImageContext *netimage_create_context(NetImageCallback callback);
 
 void netimage_destroy_context(NetImageContext *ctx);
 

@@ -6,7 +6,7 @@ https://github.com/pebble-hacks/pebble-faces
 #include "Rebble.h"
 #include "AppMessages.h"
 
-NetImageContext *netimage_create_context(NetImageCallback callback, int threadId)
+NetImageContext *netimage_create_context(NetImageCallback callback)
 {
 	NetImageContext *ctx = nt_Malloc(sizeof(NetImageContext));
 
@@ -14,7 +14,6 @@ NetImageContext *netimage_create_context(NetImageCallback callback, int threadId
 	ctx->index = 0;
 	ctx->data = NULL;
 	ctx->callback = callback;
-	ctx->threadId = threadId;
 
 	return ctx;
 }
@@ -101,11 +100,11 @@ void netimage_receive(DictionaryIterator *iter)
 				nt_Free(ctx->data);
 				if (bitmap)
 				{
-					ctx->callback(ctx->threadId, bitmap);
+					ctx->callback(bitmap);
 				}
 				else
 				{
-					ctx->callback(ctx->threadId, NULL);
+					ctx->callback(NULL);
 					DEBUG_MSG("Unable to create GBitmap. Is this a valid PBI?");
 				}
 				ctx->data = NULL;
@@ -113,7 +112,7 @@ void netimage_receive(DictionaryIterator *iter)
 			}
 			else
 			{
-				ctx->callback(ctx->threadId, NULL);
+				ctx->callback(NULL);
 				DEBUG_MSG("Got End message but we have no image...");
 			}
 			break;
