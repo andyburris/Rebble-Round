@@ -65,7 +65,33 @@ void comment_init()
 		// we are changing comments
 		// don't do anything..
 		layer_mark_dirty(comment_header_layer);
-		text_layer_set_text(comment_body_layer, current_thread.comment);
+		text_layer_destroy(comment_body_layer);
+				comment_body_layer = text_layer_create(GRect(0, 36, window_frame.size.w, 10000));
+				text_layer_set_font(comment_body_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
+				text_layer_set_text(comment_body_layer, current_thread.comment);
+				scroll_layer_add_child(comment_scroll_layer, text_layer_get_layer(comment_body_layer));
+
+				#if defined(PBL_ROUND)
+				text_layer_enable_screen_text_flow_and_paging(comment_body_layer, 5);
+
+				// Set the ScrollLayer's content size to the total size of the text
+				scroll_layer_set_content_size(comment_scroll_layer,
+																			text_layer_get_content_size(comment_body_layer));
+
+				// Enable ScrollLayer paging
+			scroll_layer_set_paging(comment_scroll_layer, true);
+
+				/*s_indicator = scroll_layer_get_content_indicator(comment_scroll_layer);
+
+				s_indicator_up_layer = layer_create(GRect(0,0,bounds.size.w, STATUS_BAR_LAYER_HEIGHT));
+				s_indicator_down_layer = layer_create(GRect(0,bounds.size.h - STATUS_BAR_LAYER_HEIGHT, bounds.size.w, STATUS_BAR_LAYER_HEIGHT));
+
+				layer_add_child(window_get_root_layer(window), s_indicator_up_layer);
+				layer_add_child(window_get_root_layer(window), s_indicator_down_layer);*/
+
+
+				#endif
+
 
 		comment_auto_resize_body();
 
