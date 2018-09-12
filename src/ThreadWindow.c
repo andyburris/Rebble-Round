@@ -88,6 +88,35 @@ void thread_window_load(Window *window)
 	layer_set_update_proc(thread_title_layer, thread_title_layer_update_proc);
 	scroll_layer_add_child(thread_scroll_layer, thread_title_layer);
 
+		#if defined(PBL_ROUND)
+
+				text_layer_enable_screen_text_flow_and_paging(comment_body_layer, 5);
+
+				// Set the ScrollLayer's content size to the total size of the text
+
+				scroll_layer_set_content_size(comment_scroll_layer,
+
+																			text_layer_get_content_size(comment_body_layer));
+
+				// Enable ScrollLayer paging
+
+			scroll_layer_set_paging(comment_scroll_layer, true);
+
+				/*s_indicator = scroll_layer_get_content_indicator(comment_scroll_layer);
+
+				s_indicator_up_layer = layer_create(GRect(0,0,bounds.size.w, STATUS_BAR_LAYER_HEIGHT));
+
+				s_indicator_down_layer = layer_create(GRect(0,bounds.size.h - STATUS_BAR_LAYER_HEIGHT, bounds.size.w, STATUS_BAR_LAYER_HEIGHT));
+
+				layer_add_child(window_get_root_layer(window), s_indicator_up_layer);
+
+				layer_add_child(window_get_root_layer(window), s_indicator_down_layer);*/
+
+				#endif
+
+
+
+
 	layer_add_child(window_get_root_layer(window), scroll_layer_get_layer(thread_scroll_layer));
 
 	thread_view_comments_layer = text_layer_create(GRect(0, 0, window_frame.size.w, LOAD_COMMENTS_HEIGHT));
