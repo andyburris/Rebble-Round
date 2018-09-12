@@ -496,8 +496,8 @@ int main()
 	}
 #endif
 
-	//font = fonts_get_system_font(FONT_KEY_GOTHIC_18);
-	//biggerFont = fonts_get_system_font(FONT_KEY_GOTHIC_24);
+	font = fonts_get_system_font(FONT_KEY_GOTHIC_18);
+	biggerFont = fonts_get_system_font(FONT_KEY_GOTHIC_24);
 
 	bluetoothConnected = bluetooth_connection_service_peek();
 	bluetooth_connection_service_subscribe(OnBluetoothConnection);
