@@ -12,6 +12,7 @@
 #define THREAD_LAYER_PADDING_TEXT_LEFT 2
 
 #define THREAD_WINDOW_HEIGHT 22
+#define COMMENT_TOP_HEIGHT_ROUND 36
 #define THREAD_WINDOW_HEIGHT_SELECTED (THREAD_WINDOW_HEIGHT * 2)
 #define THREAD_WINDOW_PADDING_TEXT_LEFT 2
 
@@ -113,8 +114,8 @@ extern int thread_offset;
 
 extern struct ViewThreadData current_thread;
 
-GFont* GetFont();
-GFont* GetBiggerFont();
+//GFont* GetFont();
+//GFont* GetBiggerFont();
 
 bool IsLoggedIn();
 void SetLoggedIn(bool lin);

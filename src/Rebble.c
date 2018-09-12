@@ -489,15 +489,15 @@ int main()
 #ifndef USE_PERSIST_STRINGS
 	for(int i = 0; i < MAX_THREADS; ++i)
 	{
-		struct ThreadData *thread = GetThread(i);		
+		struct ThreadData *thread = GetThread(i);
 		thread->title = NULL;
 		thread->score = NULL;
 		thread->subreddit = NULL;
 	}
 #endif
 
-	font = fonts_get_system_font(FONT_KEY_GOTHIC_18);
-	biggerFont = fonts_get_system_font(FONT_KEY_GOTHIC_24);
+	//font = fonts_get_system_font(FONT_KEY_GOTHIC_18);
+	//biggerFont = fonts_get_system_font(FONT_KEY_GOTHIC_24);
 
 	bluetoothConnected = bluetooth_connection_service_peek();
 	bluetooth_connection_service_subscribe(OnBluetoothConnection);

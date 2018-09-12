@@ -1,0 +1,80 @@
+{
+  "version": "1.4.0",
+  "author": "NegaTech",
+  "private": true,
+  "dependencies": {},
+  "keywords": [
+    "pebble-app"
+  ],
+  "pebble": {
+    "sdkVersion": "3",
+    "resources": {
+      "media": [
+        {
+          "menuIcon": true,
+          "type": "png",
+          "name": "IMAGE_ICON",
+          "file": "images/icon.png"
+        },
+        {
+          "type": "png",
+          "name": "IMAGE_UPVOTE",
+          "file": "images/upvote.png"
+        },
+        {
+          "type": "png",
+          "name": "IMAGE_TEXT",
+          "file": "images/text.png"
+        },
+        {
+          "type": "png",
+          "name": "IMAGE_IMAGE",
+          "file": "images/image.png"
+        }
+      ]
+    },
+    "projectType": "native",
+    "uuid": "d7583c96-0b0c-41ee-86a4-facdca791151",
+    "messageKeys": {
+      "comment": 18,
+      "subreddit": 0,
+      "load_comments": 17,
+      "ready": 15,
+      "id": 3,
+      "NETIMAGE_CHUNK_SIZE": 1768777475,
+      "thread_body": 7,
+      "subreddit_next": 2,
+      "title": 4,
+      "upvote": 8,
+      "NETIMAGE_URL": 1768777476,
+      "score": 5,
+      "save": 10,
+      "user_subreddit": 11,
+      "chunk_size": 14,
+      "downvote": 9,
+      "NETIMAGE_DATA": 1768777472,
+      "thread": 1,
+      "type": 6,
+      "NETIMAGE_END": 1768777474,
+      "thread_subreddit": 16,
+      "load_subredditlist": 13,
+      "NETIMAGE_BEGIN": 1768777473
+    },
+    "enableMultiJS": false,
+    "displayName": "Rebble",
+    "watchapp": {
+      "onlyShownOnCommunication": false,
+      "hiddenApp": false,
+      "watchface": false
+    },
+    "targetPlatforms": [
+      "aplite",
+      "basalt",
+      "chalk"
+    ],
+    "capabilities": [
+      "configurable"
+    ]
+  },
+  "name": "Rebble"
+}

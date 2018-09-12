@@ -34,7 +34,7 @@ static void thread_scroll_timer_callback(void *data);
 void thread_load()
 {
 	loading_init();
-	
+
 	if(GetSelectedThread()->type == 1)
 	{
 		loading_set_text("Loading Image");
@@ -44,7 +44,7 @@ void thread_load()
 	else
 	{
 		loading_set_text("Loading Thread");
-		
+
 		LoadThread(GetSelectedThreadID());
 	}
 }
@@ -66,7 +66,7 @@ void thread_init()
 void thread_window_load(Window *window)
 {
 	struct ThreadData *thread = GetSelectedThread();
-	
+
 	thread_scroll_layer = scroll_layer_create(window_frame);
 
 	scroll_layer_set_shadow_hidden(thread_scroll_layer, true);
@@ -81,15 +81,26 @@ void thread_window_load(Window *window)
 	};
 	scroll_layer_set_callbacks(thread_scroll_layer, scrollOverride);
 
+
 	thread_title_layer = layer_create(GRect(0, 0, window_frame.size.w, 22));
+
+
 	layer_set_update_proc(thread_title_layer, thread_title_layer_update_proc);
 	scroll_layer_add_child(thread_scroll_layer, thread_title_layer);
 
 	layer_add_child(window_get_root_layer(window), scroll_layer_get_layer(thread_scroll_layer));
 
 	thread_view_comments_layer = text_layer_create(GRect(0, 0, window_frame.size.w, LOAD_COMMENTS_HEIGHT));
+
+	#if defined(PBL_RECT)
 	text_layer_set_text(thread_view_comments_layer, "View Comments");
-	text_layer_set_font(thread_view_comments_layer, GetBiggerFont());
+
+	#elif defined(PBL_ROUND)
+	text_layer_set_text(thread_view_comments_layer, "Comments");
+
+	#endif
+
+	text_layer_set_font(thread_view_comments_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24));
 	text_layer_set_text_alignment(thread_view_comments_layer, GTextAlignmentCenter);
 	scroll_layer_add_child(thread_scroll_layer, text_layer_get_layer(thread_view_comments_layer));
 
@@ -113,22 +124,47 @@ void thread_window_load(Window *window)
 		thread_bitmap_layer = NULL;
 
 		thread_body_layer = text_layer_create(GRect(0, 22, window_frame.size.w, 10000));
-		text_layer_set_font(thread_body_layer, GetFont());
+		text_layer_set_font(thread_body_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
 		scroll_layer_add_child(thread_scroll_layer, text_layer_get_layer(thread_body_layer));
 	}
 }
 
 void thread_window_appear(Window *window)
 {
+	#if defined(PBL_RECT)
 	thread_offset = 0;
+
+	#elif defined(PBL_ROUND)
+	if(text_size.w>100){
+	thread_offset = -100;
+}else{
+	thread_offset = 0;
+}
+
+	#endif
 	thread_offset_reset = false;
 
-	text_size = graphics_text_layout_get_content_size(GetThreadTitle(GetSelectedThreadID()), GetFont(), GRect(0, 0, 1024, THREAD_WINDOW_HEIGHT), GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
+	#if defined(PBL_RECT)
+	text_size = graphics_text_layout_get_content_size(GetThreadTitle(GetSelectedThreadID()), fonts_get_system_font(FONT_KEY_GOTHIC_18), GRect(0, 0, 1024, THREAD_WINDOW_HEIGHT), GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
 
 	if(text_size.w > window_frame.size.w)
 	{
 		init_timer(app_timer_register(600, thread_scroll_timer_callback, NULL));
 	}
+
+
+	#elif defined(PBL_ROUND)
+	text_size = graphics_text_layout_get_content_size(GetThreadTitle(GetSelectedThreadID()), fonts_get_system_font(FONT_KEY_GOTHIC_18), GRect(0, 0, 1024, THREAD_WINDOW_HEIGHT), GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter);
+
+	if(text_size.w > 100)
+	{
+		init_timer(app_timer_register(600, thread_scroll_timer_callback, NULL));
+	}
+
+	#endif
+
+
+
 }
 
 void thread_window_disappear(Window *window)
@@ -258,7 +294,15 @@ static void thread_button_down(ClickRecognizerRef recognizer, void *context)
 static void thread_title_layer_update_proc(Layer *layer, GContext *ctx)
 {
 	graphics_context_set_text_color(ctx, GColorBlack);
-	graphics_draw_text(ctx, GetThreadTitle(GetSelectedThreadID()), GetFont(), GRect(-thread_offset, 0, window_frame.size.w + thread_offset, THREAD_WINDOW_HEIGHT), GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
+
+	#if defined(PBL_RECT)
+	graphics_draw_text(ctx, GetThreadTitle(GetSelectedThreadID()), fonts_get_system_font(FONT_KEY_GOTHIC_18), GRect(-thread_offset, 0, window_frame.size.w + thread_offset, THREAD_WINDOW_HEIGHT), GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
+
+	#elif defined(PBL_ROUND)
+
+	graphics_draw_text(ctx, GetThreadTitle(GetSelectedThreadID()), fonts_get_system_font(FONT_KEY_GOTHIC_18), GRect(-thread_offset, 0, window_frame.size.w + thread_offset, THREAD_WINDOW_HEIGHT), GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
+
+#endif
 }
 
 static void thread_scroll_timer_callback(void *data)
@@ -266,13 +310,23 @@ static void thread_scroll_timer_callback(void *data)
 	if(thread_offset_reset)
 	{
 		thread_offset_reset = false;
+		#if defined(PBL_RECT)
 		thread_offset = -THREAD_WINDOW_PADDING_TEXT_LEFT;
+
+		#elif defined(PBL_ROUND)
+		if(text_size.w>100){
+		thread_offset = -100;
+	}else{
+		thread_offset = 0;
+	}
+
+		#endif
 	}
 	else
 	{
 		thread_offset += 4;
 	}
-
+	#if defined(PBL_RECT)
 	if(text_size.w - thread_offset - THREAD_WINDOW_PADDING_TEXT_LEFT < window_frame.size.w)
 	{
 		thread_offset_reset = true;
@@ -282,6 +336,20 @@ static void thread_scroll_timer_callback(void *data)
 	{
 		init_timer(app_timer_register(thread_offset == -THREAD_WINDOW_PADDING_TEXT_LEFT ? 1000 : TITLE_SCROLL_SPEED, thread_scroll_timer_callback, NULL));
 	}
+
+	#elif defined(PBL_ROUND)
+	if(text_size.w - thread_offset - THREAD_WINDOW_PADDING_TEXT_LEFT < 100)
+	{
+		thread_offset_reset = true;
+		init_timer(app_timer_register(1000, thread_scroll_timer_callback, NULL));
+	}
+	else
+	{
+		init_timer(app_timer_register(thread_offset == -THREAD_WINDOW_PADDING_TEXT_LEFT ? 1000 : TITLE_SCROLL_SPEED, thread_scroll_timer_callback, NULL));
+	}
+
+	#endif
+
 
 	layer_mark_dirty(thread_title_layer);
 }

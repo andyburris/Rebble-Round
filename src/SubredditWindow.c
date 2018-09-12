@@ -67,7 +67,7 @@ void subreddit_window_load(Window *window)
 	layer_set_hidden(thread_refresh_layer, false);
 	scroll_layer_add_child(subreddit_scroll_layer, thread_refresh_layer);
 	*(int*)layer_get_data(thread_refresh_layer) = -1;
-	
+
 	for(int i = 0; i < MAX_THREADS; ++i)
 	{
 		struct ThreadData *thread = GetThread(i);
@@ -148,7 +148,7 @@ draw_text:
 	if(index == -1 || index == MAX_THREADS || thread != NULL)
 	{
 		GRect rect = GRect(0, index == GetSelectedThreadID() ? 10 : -1, window_frame.size.w, THREAD_WINDOW_HEIGHT_SELECTED);
-		graphics_draw_text(ctx, thread != NULL ? GetThreadTitle(index) : (index == -1 ? "Refresh" : "Load More"), index == GetSelectedThreadID() ? GetBiggerFont() : GetFont(), rect, GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
+		graphics_draw_text(ctx, thread != NULL ? GetThreadTitle(index) : (index == -1 ? "Refresh" : "Load More"), index == GetSelectedThreadID() ? fonts_get_system_font(FONT_KEY_GOTHIC_24) : fonts_get_system_font(FONT_KEY_GOTHIC_18), rect, GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
 		return;
 	}
 
@@ -166,7 +166,7 @@ draw_text:
 		rect.size.w += thread_offset;
 	}
 
-	graphics_draw_text(ctx, GetThreadTitle(index), GetFont(), rect, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
+	graphics_draw_text(ctx, GetThreadTitle(index), fonts_get_system_font(FONT_KEY_GOTHIC_18), rect, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
 }
 
 static void subreddit_sub_layer_update_proc(Layer *layer, GContext *ctx)
@@ -182,11 +182,11 @@ static void subreddit_sub_layer_update_proc(Layer *layer, GContext *ctx)
 
 	graphics_draw_bitmap_in_rect(ctx, bitmap_upvote, GRect(5, 5, 12, 15));
 
-	graphics_draw_text(ctx, GetThreadScore(GetSelectedThreadID()), GetFont(), sub_score_rect, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
+	graphics_draw_text(ctx, GetThreadScore(GetSelectedThreadID()), fonts_get_system_font(FONT_KEY_GOTHIC_18), sub_score_rect, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
 
 	if(GetThreadSubreddit(GetSelectedThreadID()) != NULL)
 	{
-		graphics_draw_text(ctx, GetThreadSubreddit(GetSelectedThreadID()), GetFont(), sub_subreddit_rect, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
+		graphics_draw_text(ctx, GetThreadSubreddit(GetSelectedThreadID()), fonts_get_system_font(FONT_KEY_GOTHIC_18), sub_subreddit_rect, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
 	}
 
 	graphics_draw_bitmap_in_rect(ctx, thread->type == 1 ? bitmap_image : bitmap_text, GRect(window_frame.size.w - (thread->type == 1 ? 20 : 21), 8, thread->type == 1 ? 16 : 15, thread->type == 1 ? 12 : 9));
@@ -283,7 +283,7 @@ void subreddit_selection_changed(bool before)
 
 	layer_add_child(GetSelectedThread()->layer, thread_sub_layer);
 
-	text_size = graphics_text_layout_get_content_size(GetThreadTitle(GetSelectedThreadID()), GetFont(), GRect(0, 0, 1024, THREAD_WINDOW_HEIGHT), GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
+	text_size = graphics_text_layout_get_content_size(GetThreadTitle(GetSelectedThreadID()), fonts_get_system_font(FONT_KEY_GOTHIC_18), GRect(0, 0, 1024, THREAD_WINDOW_HEIGHT), GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
 
 	if(text_size.w > window_frame.size.w)
 	{
@@ -393,7 +393,7 @@ void subreddit_load_setup()
 	for(int i = 0; i < MAX_THREADS; ++i)
 	{
 		struct ThreadData *thread = GetThread(i);
-		
+
 #ifndef USE_PERSIST_STRINGS
 		if(thread->title != NULL)
 		{
@@ -413,7 +413,7 @@ void subreddit_load_setup()
 			thread->subreddit = NULL;
 		}
 #endif
-		
+
 		layer_set_hidden(thread->layer, true);
 	}
 
