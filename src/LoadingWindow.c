@@ -72,18 +72,18 @@ void loading_window_load(Window *window)
 
 	layer_add_child(window_layer, loading_layer);
 
-	if(dotting)
-	{
+	//if(dotting)
+	//{
 		init_timer(app_timer_register(500, loading_progress_update, NULL));
-	}
+	//}
 }
 
 void loading_window_disappear(Window *window)
 {
-	if(dotting)
-	{
+	//if(dotting)
+	//{
 		cancel_timer();
-	}
+	//}
 }
 
 void loading_window_unload(Window *window)
