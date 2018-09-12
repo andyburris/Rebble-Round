@@ -67,7 +67,7 @@ void comment_init()
 		layer_mark_dirty(comment_header_layer);
 		text_layer_destroy(comment_body_layer);
 				comment_body_layer = text_layer_create(GRect(0, 36, window_frame.size.w, 10000));
-				text_layer_set_font(comment_body_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
+				text_layer_set_font(comment_body_layer, GetFont());
 				text_layer_set_text(comment_body_layer, current_thread.comment);
 				scroll_layer_add_child(comment_scroll_layer, text_layer_get_layer(comment_body_layer));
 
@@ -141,7 +141,7 @@ void comment_window_load(Window *window)
 	scroll_layer_add_child(comment_scroll_layer, comment_header_layer);
 
 	comment_body_layer = text_layer_create(GRect(0, 36, window_frame.size.w, 10000));
-	text_layer_set_font(comment_body_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
+	text_layer_set_font(comment_body_layer, GetFont());
 	text_layer_set_text(comment_body_layer, current_thread.comment);
 
 	scroll_layer_add_child(comment_scroll_layer, text_layer_get_layer(comment_body_layer));
@@ -256,20 +256,20 @@ static void comment_button_down(ClickRecognizerRef recognizer, void *context)
 static void comment_header_layer_update_proc(Layer *layer, GContext *ctx)
 {
 	graphics_context_set_text_color(ctx, GColorBlack);
-	graphics_draw_text(ctx, current_thread.score, fonts_get_system_font(FONT_KEY_GOTHIC_18), comment_score_rect, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
+	graphics_draw_text(ctx, current_thread.score, GetFont(), comment_score_rect, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
 
 	if(current_thread.thread_author != NULL && current_thread.author != NULL && strcmp(current_thread.thread_author, current_thread.author) == 0)
 	{
 		graphics_context_set_fill_color(ctx, GColorBlack);
 
-		GSize textSize = graphics_text_layout_get_content_size(current_thread.author, fonts_get_system_font(FONT_KEY_GOTHIC_18), comment_author_rect, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
+		GSize textSize = graphics_text_layout_get_content_size(current_thread.author, GetFont(), comment_author_rect, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
 		comment_author_fill_rect.size.w = textSize.w + 1;
 		graphics_fill_rect(ctx, comment_author_fill_rect, 0, GCornerNone);
 
 		graphics_context_set_text_color(ctx, GColorWhite);
 	}
 
-	graphics_draw_text(ctx, current_thread.author, fonts_get_system_font(FONT_KEY_GOTHIC_18), comment_author_rect, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
+	graphics_draw_text(ctx, current_thread.author, GetFont(), comment_author_rect, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
 
 	graphics_draw_bitmap_in_rect(ctx, bitmap_upvote, comment_upvote_rect);
 

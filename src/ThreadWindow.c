@@ -105,7 +105,7 @@ void thread_window_load(Window *window)
 
 	#endif
 
-	text_layer_set_font(thread_view_comments_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24));
+	text_layer_set_font(thread_view_comments_layer, GetBiggerFont());
 	text_layer_set_text_alignment(thread_view_comments_layer, GTextAlignmentCenter);
 	scroll_layer_add_child(thread_scroll_layer, text_layer_get_layer(thread_view_comments_layer));
 
@@ -129,7 +129,7 @@ void thread_window_load(Window *window)
 		thread_bitmap_layer = NULL;
 
 		thread_body_layer = text_layer_create(GRect(0, 22, window_frame.size.w, 10000));
-		text_layer_set_font(thread_body_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
+		text_layer_set_font(thread_body_layer, GetFont());
 		scroll_layer_add_child(thread_scroll_layer, text_layer_get_layer(thread_body_layer));
 
 		#if defined(PBL_ROUND)
@@ -176,7 +176,7 @@ void thread_window_appear(Window *window)
 	thread_offset_reset = false;
 
 	#if defined(PBL_RECT)
-	text_size = graphics_text_layout_get_content_size(GetThreadTitle(GetSelectedThreadID()), fonts_get_system_font(FONT_KEY_GOTHIC_18), GRect(0, 0, 1024, THREAD_WINDOW_HEIGHT), GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
+	text_size = graphics_text_layout_get_content_size(GetThreadTitle(GetSelectedThreadID()), GetFont(), GRect(0, 0, 1024, THREAD_WINDOW_HEIGHT), GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
 
 	if(text_size.w > window_frame.size.w)
 	{
@@ -185,7 +185,7 @@ void thread_window_appear(Window *window)
 
 
 	#elif defined(PBL_ROUND)
-	text_size = graphics_text_layout_get_content_size(GetThreadTitle(GetSelectedThreadID()), fonts_get_system_font(FONT_KEY_GOTHIC_18), GRect(0, 0, 1024, THREAD_WINDOW_HEIGHT), GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter);
+	text_size = graphics_text_layout_get_content_size(GetThreadTitle(GetSelectedThreadID()), GetFont(), GRect(0, 0, 1024, THREAD_WINDOW_HEIGHT), GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter);
 
 	if(text_size.w > 100)
 	{
@@ -327,11 +327,11 @@ static void thread_title_layer_update_proc(Layer *layer, GContext *ctx)
 	graphics_context_set_text_color(ctx, GColorBlack);
 
 	#if defined(PBL_RECT)
-	graphics_draw_text(ctx, GetThreadTitle(GetSelectedThreadID()), fonts_get_system_font(FONT_KEY_GOTHIC_18), GRect(-thread_offset, 0, window_frame.size.w + thread_offset, THREAD_WINDOW_HEIGHT), GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
+	graphics_draw_text(ctx, GetThreadTitle(GetSelectedThreadID()), GetFont(), GRect(-thread_offset, 0, window_frame.size.w + thread_offset, THREAD_WINDOW_HEIGHT), GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
 
 	#elif defined(PBL_ROUND)
 
-	graphics_draw_text(ctx, GetThreadTitle(GetSelectedThreadID()), fonts_get_system_font(FONT_KEY_GOTHIC_18), GRect(-thread_offset, 0, window_frame.size.w + thread_offset, THREAD_WINDOW_HEIGHT), GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
+	graphics_draw_text(ctx, GetThreadTitle(GetSelectedThreadID()), GetFont(), GRect(-thread_offset, 0, window_frame.size.w + thread_offset, THREAD_WINDOW_HEIGHT), GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
 
 #endif
 }
