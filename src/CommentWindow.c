@@ -43,7 +43,7 @@ void comment_load(int dir)
 	dict_write_tuplet(iter, &tuple);
 
 	app_message_outbox_send();
-	
+
 	loading_init();
 
 	loading_set_text("Loading Comments");
@@ -67,8 +67,32 @@ void comment_init()
 		layer_mark_dirty(comment_header_layer);
 
 		text_layer_destroy(comment_body_layer);
-		comment_body_layer = comment_body_layer_create();
-		scroll_layer_add_child(comment_scroll_layer, text_layer_get_layer(comment_body_layer));
+				comment_body_layer = text_layer_create(GRect(0, 36, window_frame.size.w, 10000));
+				text_layer_set_font(comment_body_layer, GetFont());
+				text_layer_set_text(comment_body_layer, current_thread.comment);
+				scroll_layer_add_child(comment_scroll_layer, text_layer_get_layer(comment_body_layer));
+
+				#if defined(PBL_ROUND)
+				text_layer_enable_screen_text_flow_and_paging(comment_body_layer, 5);
+
+				// Set the ScrollLayer's content size to the total size of the text
+				scroll_layer_set_content_size(comment_scroll_layer,
+																			text_layer_get_content_size(comment_body_layer));
+
+				// Enable ScrollLayer paging
+			scroll_layer_set_paging(comment_scroll_layer, true);
+
+				/*s_indicator = scroll_layer_get_content_indicator(comment_scroll_layer);
+
+				s_indicator_up_layer = layer_create(GRect(0,0,bounds.size.w, STATUS_BAR_LAYER_HEIGHT));
+				s_indicator_down_layer = layer_create(GRect(0,bounds.size.h - STATUS_BAR_LAYER_HEIGHT, bounds.size.w, STATUS_BAR_LAYER_HEIGHT));
+
+				layer_add_child(window_get_root_layer(window), s_indicator_up_layer);
+				layer_add_child(window_get_root_layer(window), s_indicator_down_layer);*/
+
+
+				#endif
+
 
 		comment_auto_resize_body();
 
@@ -83,10 +107,19 @@ void comment_init()
 
 void comment_window_load(Window *window)
 {
+
+	#if defined(PBL_RECT)
 	comment_author_rect = GRect(1, -3, window_frame.size.w - 51, 22);
 	comment_author_fill_rect = GRect(1, 1, window_frame.size.w - 51, 18);
 	comment_upvote_rect = GRect(window_frame.size.w - 50, 2, 12, 14);
 	comment_score_rect = GRect(window_frame.size.w - 35, -3, 35, 22);
+
+	#elif defined(PBL_ROUND)
+	comment_author_rect = GRect(window_frame.size.w/2-text_size.w, 7, window_frame.size.w - 51, 22);
+	comment_author_fill_rect = GRect(window_frame.size.w/2-text_size.w, 11, window_frame.size.w - 51, 18);
+	comment_upvote_rect = GRect(window_frame.size.w/2, 2, 12, 14);
+	comment_score_rect = GRect(window_frame.size.w/2-15, -3, 35, 22);
+	#endif
 
 	comment_scroll_layer = scroll_layer_create(window_frame);
 
@@ -104,13 +137,38 @@ void comment_window_load(Window *window)
 	};
 	scroll_layer_set_callbacks(comment_scroll_layer, scrollOverride);
 
-	comment_header_layer = layer_create(GRect(0, 0, window_frame.size.w, THREAD_WINDOW_HEIGHT));
+	comment_header_layer = layer_create(GRect(0, 0, window_frame.size.w, 36));
 	layer_set_update_proc(comment_header_layer, comment_header_layer_update_proc);
-	scroll_layer_add_child(comment_scroll_layer, comment_header_layer);	
+	scroll_layer_add_child(comment_scroll_layer, comment_header_layer);
 
-	comment_body_layer = comment_body_layer_create();
+
+	comment_body_layer = text_layer_create(GRect(0, 36, window_frame.size.w, 10000));
+	text_layer_set_font(comment_body_layer, GetFont());
+	text_layer_set_text(comment_body_layer, current_thread.comment);
+
 
 	scroll_layer_add_child(comment_scroll_layer, text_layer_get_layer(comment_body_layer));
+
+	#if defined(PBL_ROUND)
+	text_layer_enable_screen_text_flow_and_paging(comment_body_layer, 5);
+
+	// Set the ScrollLayer's content size to the total size of the text
+	scroll_layer_set_content_size(comment_scroll_layer,
+	                              text_layer_get_content_size(comment_body_layer));
+
+	// Enable ScrollLayer paging
+scroll_layer_set_paging(comment_scroll_layer, true);
+
+	/*s_indicator = scroll_layer_get_content_indicator(comment_scroll_layer);
+
+	s_indicator_up_layer = layer_create(GRect(0,0,bounds.size.w, STATUS_BAR_LAYER_HEIGHT));
+	s_indicator_down_layer = layer_create(GRect(0,bounds.size.h - STATUS_BAR_LAYER_HEIGHT, bounds.size.w, STATUS_BAR_LAYER_HEIGHT));
+
+	layer_add_child(window_get_root_layer(window), s_indicator_up_layer);
+	layer_add_child(window_get_root_layer(window), s_indicator_down_layer);*/
+
+
+	#endif
 
 	comment_auto_resize_body();
 }
@@ -208,12 +266,12 @@ static void comment_header_layer_update_proc(Layer *layer, GContext *ctx)
 
 		graphics_context_set_text_color(ctx, GColorWhite);
 	}
-	
+
 	graphics_draw_text(ctx, current_thread.author, GetFont(), comment_author_rect, GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
 
 	graphics_draw_bitmap_in_rect(ctx, bitmap_upvote, comment_upvote_rect);
 
-	GPoint point = GPoint(0, THREAD_WINDOW_HEIGHT - 1);
+	GPoint point = GPoint(0, 36 - 1);
 
 	for(int i=0; i < (current_thread.depth + 1); i++)
 	{

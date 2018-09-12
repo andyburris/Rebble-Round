@@ -67,7 +67,7 @@ void subreddit_window_load(Window *window)
 	layer_set_hidden(thread_refresh_layer, false);
 	scroll_layer_add_child(subreddit_scroll_layer, thread_refresh_layer);
 	*(int*)layer_get_data(thread_refresh_layer) = -1;
-	
+
 	for(int i = 0; i < MAX_THREADS; ++i)
 	{
 		struct ThreadData *thread = GetThread(i);
@@ -393,7 +393,7 @@ void subreddit_load_setup()
 	for(int i = 0; i < MAX_THREADS; ++i)
 	{
 		struct ThreadData *thread = GetThread(i);
-		
+
 #ifndef USE_PERSIST_STRINGS
 		if(thread->title != NULL)
 		{
@@ -413,7 +413,7 @@ void subreddit_load_setup()
 			thread->subreddit = NULL;
 		}
 #endif
-		
+
 		layer_set_hidden(thread->layer, true);
 	}
 

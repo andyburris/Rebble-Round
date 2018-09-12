@@ -1,3 +1,4 @@
 *.lock-waf_linux2_build
 build/
 crash_line.sh
+node_modules/

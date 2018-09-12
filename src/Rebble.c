@@ -495,7 +495,7 @@ int main()
 #ifndef USE_PERSIST_STRINGS
 	for(int i = 0; i < MAX_THREADS; ++i)
 	{
-		struct ThreadData *thread = GetThread(i);		
+		struct ThreadData *thread = GetThread(i);
 		thread->title = NULL;
 		thread->score = NULL;
 		thread->subreddit = NULL;

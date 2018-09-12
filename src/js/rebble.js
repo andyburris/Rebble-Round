@@ -79,7 +79,7 @@ function nt_BeginAppMessageQueue(name)
 	{
 		return;
 	}
-	
+
 	nt_AppMessageQueueRunning[name] = true;
 
 	nt_NextAppMessageQueue(name);
@@ -527,7 +527,7 @@ function Comments_Load(dir)
 		threadCommentsDepth.pop();
 
 		Comments_Load(-1);
-		
+
 		return;
 	}
 
@@ -636,12 +636,12 @@ function Subreddit_Load(subreddit, after)
 			}
 			catch(e)
 			{
-				
+
 			}
 
 			if (response !== false && response.data)
 			{
-				var children = response.data.children;			
+				var children = response.data.children;
 
 				for (var i = 0; i < children.length; ++i)
 				{
@@ -887,7 +887,7 @@ Pebble.addEventListener("showConfiguration", function(e)
 	{
 		url += fixedEncodeURIComponent("username") + "=" + fixedEncodeURIComponent(username) + "&";
 	}
-	
+
 	if(password)
 	{
 		url += fixedEncodeURIComponent("password") + "=" + fixedEncodeURIComponent(password) + "&";
@@ -974,7 +974,7 @@ function LoadImageComments(dir)
 	{
 		url = "r/" + GetThreadSubreddit(threadCommentsIndex) + "/comments/" + GetThreadID(threadCommentsIndex) + ".json";
 	}
-	
+
 	RedditAPI(url, null,
 		function(responseText)
 		{
