@@ -28,6 +28,9 @@ var threadCommentsDepth = null;
 
 var chunkSize = 0;
 
+var multiMessage = false;
+var remainingString = "";
+
 var SUBREDDIT_QUEUE = "Subreddit";
 var SUBREDDITLIST_QUEUE = "SubredditList";
 var THREAD_QUEUE = "Thread";
@@ -439,6 +442,14 @@ function Thread_Load(subreddit, id, index)
 					//console.log("Text Length: " + selftext.length);
 
 					var trimmed_body = selftext.replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, '').substr(0, chunkSize - 128).trim();
+					//var trimmed_body = selftext;
+
+					if(trimmed_body != selftext){
+						multiMessage = true;
+						remainingString = selftext.substr(chunkSize - 128, selftext.length);
+						console.log(remainingString);
+					}
+
 
 					if(trimmed_body.length === 0)
 					{
