@@ -10,7 +10,8 @@ var subreddits;
 var last_subreddit;
 
 var redditUrl = "https://www.reddit.com";
-var default_subreddits = "all,AskReddit,aww,bestof,books,earthporn,explainlikeimfive,funny,games,IAmA,movies,music,news,pics,science,technology,television,todayilearned,tifu";
+//var default_subreddits = "all,AskReddit,aww,bestof,books,earthporn,explainlikeimfive,funny,games,IAmA,movies,music,news,pics,science,technology,television,todayilearned,tifu";
+var default_subreddits = "legaladvice, pettyrevenge, prorevenge";
 
 var modhash = "";
 
@@ -439,15 +440,48 @@ function Thread_Load(subreddit, id, index)
 				{
 					var selftext = child["selftext"];
 
+					console.log(selftext);
+
+					if(multiMessage){
+						selftext = remainingString;
+					}
+
 					//console.log("Text Length: " + selftext.length);
 
-					var trimmed_body = selftext.replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, '').substr(0, chunkSize - 128).trim();
-					//var trimmed_body = selftext;
+					var filtered_body = selftext.replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, '');
 
-					if(trimmed_body != selftext){
+					var trimmed_body = filtered_body.substr(0, chunkSize - 128).trim();
+					//var trimmed_body = selftext;
+					console.log(filtered_body);
+					console.log(trimmed_body);
+
+
+
+
+					if(trimmed_body != filtered_body){
 						multiMessage = true;
-						remainingString = selftext.substr(chunkSize - 128, selftext.length);
+						remainingString = filtered_body.substr(chunkSize - 128, filtered_body.length);
+
+						while(trimmed_body.substr(trimmed_body.length-4, trimmed_body.length)=="/||/"){
+							trimmed_body = trimmed_body.substr(0,trimmed_body.length-4)
+							remainingString = "/||/" + remainingString;
+						}
+
 						console.log(remainingString);
+						trimmed_body.append("/||/");
+						console.log(trimmed_body);
+
+						sendAppMessageEx(THREAD_QUEUE, {
+							"id": index,
+							"title": child["author"],
+							"thread_body" : trimmed_body
+						});
+
+						Thread_Load(subreddit, id, index);
+
+					}else {
+						multiMessage = false;
+						remainingString = null;
 					}
 
 
@@ -461,6 +495,7 @@ function Thread_Load(subreddit, id, index)
 						"title": child["author"],
 						"thread_body" : trimmed_body
 					});
+
 				}
 
 				//console.log("setting comments");

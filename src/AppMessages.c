@@ -1,5 +1,5 @@
 /*******************************
-	App Messsage Handlers
+App Messsage Handlers
 ********************************/
 
 #include "Rebble.h"
@@ -18,6 +18,9 @@ uint32_t inboxSize = 0;
 
 bool loadedSubredditList = false;
 bool refreshSubreddit = false;
+
+char* longBody = "";
+bool longMessage = false;
 
 static void in_received_handler(DictionaryIterator *iter, void *context);
 static void in_dropped_handler(AppMessageResult reason, void *context);
@@ -41,7 +44,7 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 		else
 		{
 			//DEBUG_MSG("null get_netimage_context");
-		}	
+		}
 		return;
 	}
 
@@ -116,7 +119,7 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 		if(current_thread.author == NULL)
 		{
 			goto comment_load_failure;
-		}		
+		}
 
 		current_thread.score = (char*)nt_Malloc(sizeof(char) * (strlen(thread_score_tuple->value->cstring) + 1));
 		if(current_thread.score == NULL)
@@ -145,14 +148,14 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 		comment_load_finished();
 		return;
 
-comment_load_failure:
+		comment_load_failure:
 
 		if(loading_visible())
 		{
 			loading_disable_dots();
 			loading_set_text("Unable to load comments");
 		}
-		
+
 		return;
 	}
 
@@ -235,12 +238,12 @@ comment_load_failure:
 
 		goto done_skip;
 
-done:
+		done:
 		loading_uninit();
 		subredditlist_init();
 
-done_skip:
-		return;		
+		done_skip:
+		return;
 	}
 
 	if(thread_type_tuple && thread_type_tuple->value->uint8 == 255)
@@ -267,7 +270,7 @@ done_skip:
 		}
 
 		struct ThreadData *thread = &threads[thread_loaded];
-		
+
 		SetThreadTitle(thread, thread_loaded, thread_title_tuple->value->cstring);
 		SetThreadScore(thread, thread_loaded, thread_score_tuple->value->cstring);
 		SetThreadSubreddit(thread, thread_loaded, thread_subreddit_tuple ? thread_subreddit_tuple->value->cstring : NULL);
@@ -279,7 +282,7 @@ done_skip:
 		thread_loaded++;
 
 		scroll_layer_set_content_size(subreddit_scroll_layer, GSize(144, thread_loaded * (THREAD_WINDOW_HEIGHT + THREAD_LAYER_PADDING) + THREAD_WINDOW_HEIGHT_SELECTED + THREAD_LAYER_PADDING));
-		
+
 		if(thread_loaded == 1)
 		{
 			subreddit_selection_changed(false);
@@ -290,68 +293,203 @@ done_skip:
 	{
 		if(thread_body_tuple && thread_title_tuple)
 		{
-			if(thread_id_tuple->value->uint8 != GetSelectedThreadID())
-			{
-				DEBUG_MSG("loading old thread");
-				return;
-			}
+			//check for multi-message string
+			char *multi = (char*) nt_Malloc(sizeof(char) * 5);
+			int noMulti = strlen(thread_body_tuple->value->cstring) - 4;
 
-			// thread body
-			if(current_thread.body != NULL)
-			{
-				nt_Free(current_thread.body);
-			}
+			strncpy(multi, thread_body_tuple->value->cstring+noMulti, strlen(thread_body_tuple->value->cstring) + 1);
+			APP_LOG(APP_LOG_LEVEL_DEBUG, "Final chars: %s", multi);
 
-			current_thread.body = (char*)nt_Malloc(sizeof(char) * (strlen(thread_body_tuple->value->cstring) + 1));
-			if(current_thread.body == NULL)
-			{
-body_fail:		if(loading_visible())
+			if(strcmp(multi, "/||/") != 0 && !longMessage){
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "Short post");
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "Current body chars: %s", thread_body_tuple->value->cstring);
+
+				if(thread_id_tuple->value->uint8 != GetSelectedThreadID())
 				{
-					loading_disable_dots();
-					loading_set_text("Unable to load thread");
+					DEBUG_MSG("loading old thread");
+					return;
 				}
-				return;
+
+				// thread body
+				if(current_thread.body != NULL)
+				{
+					nt_Free(current_thread.body);
+				}
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "before memalloc");
+
+
+				current_thread.body = (char*)nt_Malloc(sizeof(char) * (strlen(thread_body_tuple->value->cstring) + 1));
+				if(current_thread.body == NULL)
+				{
+					body_fail:		if(loading_visible())
+					{
+						loading_disable_dots();
+						loading_set_text("Unable to load thread");
+					}
+					return;
+				}
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "after memalloc");
+
+				strcpy(current_thread.body, thread_body_tuple->value->cstring);
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "Current body chars: %s", current_thread.body);
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "filled body, %d", strlen(current_thread.body));
+
+
+				// thread author
+				if(current_thread.thread_author != NULL)
+				{
+					nt_Free(current_thread.thread_author);
+				}
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "before author");
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "title tuple size: %d", strlen(thread_title_tuple->value->cstring));
+
+				int author_malloc = strlen(thread_title_tuple->value->cstring) + 1;
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "mem to alloc: %d", author_malloc);
+
+
+
+				current_thread.thread_author = nt_Malloc(author_malloc * sizeof current_thread.thread_author);
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "after author memalloc");
+
+
+				if(current_thread.thread_author == NULL)
+				{
+					nt_Free(current_thread.body);
+					current_thread.body = NULL;
+					goto body_fail;
+				}
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "after author memalloc");
+
+
+				strcpy(current_thread.thread_author, thread_title_tuple->value->cstring);
+
+				//DEBUG_MSG("filled body, %d", strlen(current_thread.body));
+				//DEBUG_MSG("Thread load...?");
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "before thread_load");
+
+				thread_load_finished();
+
+				if(thread_body_layer == NULL)
+				{
+					return;
+				}
+
+				text_layer_set_text(thread_body_layer, current_thread.body);
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "Short post body layer set");
+
+				GSize size = text_layer_get_content_size(thread_body_layer);
+				size.h += 5;
+				text_layer_set_size(thread_body_layer, size);
+
+				size.h = window_frame.size.h > size.h ? window_frame.size.h : size.h + 5;
+
+				scroll_layer_set_content_size(thread_scroll_layer, GSize(window_frame.size.w, 22 + size.h + 10));
+
+				thread_update_comments_position();
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "after all");
+
+
+
+			}else if(strcmp(multi, "/||/") != 0 && longMessage){
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "Final post");
+
+				longMessage = false;
+
+				char *toAppend = (char*) nt_Malloc(sizeof(char) * (strlen(thread_body_tuple->value->cstring)-3));
+				strncpy(toAppend, thread_body_tuple->value->cstring, strlen(thread_body_tuple->value->cstring)-4);
+
+				longBody = (char*) nt_Malloc(sizeof(char) * (strlen(toAppend)+strlen(longBody)+1));
+
+
+				strcat(longBody, toAppend);
+
+				if(thread_id_tuple->value->uint8 != GetSelectedThreadID())
+				{
+					DEBUG_MSG("loading old thread");
+					return;
+				}
+
+				// thread body
+				if(current_thread.body != NULL)
+				{
+					nt_Free(current_thread.body);
+				}
+
+				current_thread.body = (char*)nt_Malloc(sizeof(char) * (strlen(longBody) + 1));
+				if(current_thread.body == NULL)
+				{
+					goto body_fail;
+
+				}
+
+				strcpy(current_thread.body, longBody);
+
+				// thread author
+				if(current_thread.thread_author != NULL)
+				{
+					nt_Free(current_thread.thread_author);
+				}
+
+				current_thread.thread_author = (char*)nt_Malloc(sizeof(char) * (strlen(thread_title_tuple->value->cstring) + 1));
+				if(current_thread.thread_author == NULL)
+				{
+					nt_Free(current_thread.body);
+					current_thread.body = NULL;
+					goto body_fail;
+				}
+
+				strcpy(current_thread.thread_author, thread_title_tuple->value->cstring);
+
+				//DEBUG_MSG("filled body, %d", strlen(current_thread.body));
+				//DEBUG_MSG("Thread load...?");
+
+				thread_load_finished();
+
+				if(thread_body_layer == NULL)
+				{
+					return;
+				}
+
+				text_layer_set_text(thread_body_layer, current_thread.body);
+
+				GSize size = text_layer_get_content_size(thread_body_layer);
+				size.h += 5;
+				text_layer_set_size(thread_body_layer, size);
+
+				size.h = window_frame.size.h > size.h ? window_frame.size.h : size.h + 5;
+
+				scroll_layer_set_content_size(thread_scroll_layer, GSize(window_frame.size.w, 22 + size.h + 10));
+
+				thread_update_comments_position();
+
+
+
+			}else{
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "Long post");
+
+
+				char *toAppend = (char*) nt_Malloc(sizeof(char) * (strlen(thread_body_tuple->value->cstring)-3));
+				strncpy(toAppend, thread_body_tuple->value->cstring, strlen(thread_body_tuple->value->cstring)-4);
+
+				longBody = (char*) nt_Malloc(sizeof(char) * (strlen(toAppend)+strlen(longBody)+1));
+
+
+				strcat(longBody, toAppend);
+
+				longMessage = true;
 			}
-
-			strcpy(current_thread.body, thread_body_tuple->value->cstring);
-
-			// thread author
-			if(current_thread.thread_author != NULL)
-			{
-				nt_Free(current_thread.thread_author);
-			}
-
-			current_thread.thread_author = (char*)nt_Malloc(sizeof(char) * (strlen(thread_title_tuple->value->cstring) + 1));
-			if(current_thread.thread_author == NULL)
-			{
-				nt_Free(current_thread.body);
-				current_thread.body = NULL;
-				goto body_fail;
-			}
-
-			strcpy(current_thread.thread_author, thread_title_tuple->value->cstring);
-
-			//DEBUG_MSG("filled body, %d", strlen(current_thread.body));
-			//DEBUG_MSG("Thread load...?");
-
-			thread_load_finished();
-
-			if(thread_body_layer == NULL)
-			{
-				return;
-			}
-
-			text_layer_set_text(thread_body_layer, current_thread.body);
-
-			GSize size = text_layer_get_content_size(thread_body_layer);
-			size.h += 5;
-			text_layer_set_size(thread_body_layer, size);
-
-			size.h = window_frame.size.h > size.h ? window_frame.size.h : size.h + 5;
-
-			scroll_layer_set_content_size(thread_scroll_layer, GSize(window_frame.size.w, 22 + size.h + 10));
-
-			thread_update_comments_position();
 		}
 		else
 		{
@@ -360,6 +498,7 @@ body_fail:		if(loading_visible())
 
 			subreddit_init();
 		}
+
 	}
 }
 
@@ -369,35 +508,35 @@ char* app_message_result_to_string(AppMessageResult reason)
 	switch (reason)
 	{
 		case APP_MSG_OK:
-			return "APP_MSG_OK";
+		return "APP_MSG_OK";
 		case APP_MSG_SEND_TIMEOUT:
-			return "APP_MSG_SEND_TIMEOUT";
+		return "APP_MSG_SEND_TIMEOUT";
 		case APP_MSG_SEND_REJECTED:
-			return "APP_MSG_SEND_REJECTED";
+		return "APP_MSG_SEND_REJECTED";
 		case APP_MSG_NOT_CONNECTED:
-			return "APP_MSG_NOT_CONNECTED";
+		return "APP_MSG_NOT_CONNECTED";
 		case APP_MSG_APP_NOT_RUNNING:
-			return "APP_MSG_APP_NOT_RUNNING";
+		return "APP_MSG_APP_NOT_RUNNING";
 		case APP_MSG_INVALID_ARGS:
-			return "APP_MSG_INVALID_ARGS";
+		return "APP_MSG_INVALID_ARGS";
 		case APP_MSG_BUSY:
-			return "APP_MSG_BUSY";
+		return "APP_MSG_BUSY";
 		case APP_MSG_BUFFER_OVERFLOW:
-			return "APP_MSG_BUFFER_OVERFLOW";
+		return "APP_MSG_BUFFER_OVERFLOW";
 		case APP_MSG_ALREADY_RELEASED:
-			return "APP_MSG_ALREADY_RELEASED";
+		return "APP_MSG_ALREADY_RELEASED";
 		case APP_MSG_CALLBACK_ALREADY_REGISTERED:
-			return "APP_MSG_CALLBACK_ALREADY_REGISTERED";
+		return "APP_MSG_CALLBACK_ALREADY_REGISTERED";
 		case APP_MSG_CALLBACK_NOT_REGISTERED:
-			return "APP_MSG_CALLBACK_NOT_REGISTERED";
+		return "APP_MSG_CALLBACK_NOT_REGISTERED";
 		case APP_MSG_OUT_OF_MEMORY:
-			return "APP_MSG_OUT_OF_MEMORY";
+		return "APP_MSG_OUT_OF_MEMORY";
 		case APP_MSG_CLOSED:
-			return "APP_MSG_CLOSED";
+		return "APP_MSG_CLOSED";
 		case APP_MSG_INTERNAL_ERROR:
-			return "APP_MSG_INTERNAL_ERROR";
+		return "APP_MSG_INTERNAL_ERROR";
 		default:
-			return "UNKNOWN ERROR";
+		return "UNKNOWN ERROR";
 	}
 }
 #endif
@@ -408,9 +547,9 @@ static void in_dropped_handler(AppMessageResult reason, void *context)
 	/*
 	if(loading_visible())
 	{
-		loading_set_text("An error occured\nPlease try again");
-	}
-	*/
+	loading_set_text("An error occured\nPlease try again");
+}
+*/
 }
 
 static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context)
@@ -432,11 +571,11 @@ static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reas
 	}
 	/*else
 	{
-		if(loading_visible())
-		{
-			loading_set_text("An error occured\nPlease try again");
-		}
-	}*/
+	if(loading_visible())
+	{
+	loading_set_text("An error occured\nPlease try again");
+}
+}*/
 }
 
 void app_message_init()
@@ -474,9 +613,9 @@ static void app_message_send_ready_reply()
 	if(refreshSubreddit)
 	{
 		refreshSubreddit = false;
-		
+
 		subreddit_load_setup();
-		
+
 		Tuplet tuple = TupletCString(VIEW_SUBREDDIT, "0");
 
 		dict_write_tuplet(iter, &tuple);
