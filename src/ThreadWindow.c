@@ -53,8 +53,15 @@ void thread_load_finished()
 {
 	if(loading_visible())
 	{
+		APP_LOG(APP_LOG_LEVEL_DEBUG, "window visible");
+
+
 		loading_uninit();
+		APP_LOG(APP_LOG_LEVEL_DEBUG, "loading_uninit");
+
 		thread_init();
+		APP_LOG(APP_LOG_LEVEL_DEBUG, "finished");
+
 	}
 }
 

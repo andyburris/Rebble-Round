@@ -20,6 +20,7 @@ bool loadedSubredditList = false;
 bool refreshSubreddit = false;
 
 char* longBody = "";
+char* longBodyBuffer = "";
 bool longMessage = false;
 
 static void in_received_handler(DictionaryIterator *iter, void *context);
@@ -294,17 +295,24 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 		if(thread_body_tuple && thread_title_tuple)
 		{
 			//check for multi-message string
-			char *multi = (char*) nt_Malloc(sizeof(char) * 5);
-			int noMulti = strlen(thread_body_tuple->value->cstring) - 4;
 
-			strncpy(multi, thread_body_tuple->value->cstring+noMulti, strlen(thread_body_tuple->value->cstring) + 1);
+			int stringLength = strlen(thread_body_tuple->value->cstring);
+			char *recievedString = (char*) nt_Malloc(sizeof(char) * stringLength + 1);
+			strcpy(recievedString, thread_body_tuple->value->cstring);
+			APP_LOG(APP_LOG_LEVEL_DEBUG, "Current body chars: %s", recievedString);
+
+			int noMulti = stringLength - 4;
+
+			char *multi = (char*) nt_Malloc(sizeof(char) * ((stringLength - noMulti)+1));
+
+			//strncpy(multi, recievedString + noMulti, stringLength/* + 1*/);
+			strcpy(multi, &recievedString[(strlen(recievedString) > 4) ? (strlen(recievedString) - 4) : 0]);
 			APP_LOG(APP_LOG_LEVEL_DEBUG, "Final chars: %s", multi);
 
-			if(strcmp(multi, "/||/") != 0 && !longMessage){
+			if(strcmp(multi, "mlti") != 0 && !longMessage){
 
 				APP_LOG(APP_LOG_LEVEL_DEBUG, "Short post");
 
-				APP_LOG(APP_LOG_LEVEL_DEBUG, "Current body chars: %s", thread_body_tuple->value->cstring);
 
 				if(thread_id_tuple->value->uint8 != GetSelectedThreadID())
 				{
@@ -321,7 +329,9 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 				APP_LOG(APP_LOG_LEVEL_DEBUG, "before memalloc");
 
 
-				current_thread.body = (char*)nt_Malloc(sizeof(char) * (strlen(thread_body_tuple->value->cstring) + 1));
+				current_thread.body = (char*) malloc(sizeof(char) * (stringLength + 1));
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "after memalloc");
+
 				if(current_thread.body == NULL)
 				{
 					body_fail:		if(loading_visible())
@@ -332,9 +342,8 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 					return;
 				}
 
-				APP_LOG(APP_LOG_LEVEL_DEBUG, "after memalloc");
 
-				strcpy(current_thread.body, thread_body_tuple->value->cstring);
+				strcpy(current_thread.body, recievedString);
 
 				APP_LOG(APP_LOG_LEVEL_DEBUG, "Current body chars: %s", current_thread.body);
 				APP_LOG(APP_LOG_LEVEL_DEBUG, "filled body, %d", strlen(current_thread.body));
@@ -354,7 +363,7 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 
 
 
-				current_thread.thread_author = nt_Malloc(author_malloc * sizeof current_thread.thread_author);
+				current_thread.thread_author = malloc(author_malloc * sizeof current_thread.thread_author);
 				APP_LOG(APP_LOG_LEVEL_DEBUG, "after author memalloc");
 
 
@@ -373,12 +382,16 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 				//DEBUG_MSG("filled body, %d", strlen(current_thread.body));
 				//DEBUG_MSG("Thread load...?");
 
+
 				APP_LOG(APP_LOG_LEVEL_DEBUG, "before thread_load");
 
 				thread_load_finished();
 
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "after thread_load");
+
 				if(thread_body_layer == NULL)
 				{
+					APP_LOG(APP_LOG_LEVEL_DEBUG, "Thread body null");
 					return;
 				}
 
@@ -400,19 +413,40 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 
 
 
-			}else if(strcmp(multi, "/||/") != 0 && longMessage){
+			}else if(strcmp(multi, "mlti") != 0 && longMessage){
 
 				APP_LOG(APP_LOG_LEVEL_DEBUG, "Final post");
 
 				longMessage = false;
 
-				char *toAppend = (char*) nt_Malloc(sizeof(char) * (strlen(thread_body_tuple->value->cstring)-3));
-				strncpy(toAppend, thread_body_tuple->value->cstring, strlen(thread_body_tuple->value->cstring)-4);
+				char *toAppend = (char*) nt_Malloc(sizeof(char) * (strlen(thread_body_tuple->value->cstring)+1));
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "Final after malloc");
+
+
+				strncpy(toAppend, thread_body_tuple->value->cstring, strlen(thread_body_tuple->value->cstring));
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "Final after strncpy");
+
+
+				longBodyBuffer = (char*) nt_Malloc(sizeof(char) * (strlen(longBody)+1));
+				strcpy(longBodyBuffer, longBody);
+
 
 				longBody = (char*) nt_Malloc(sizeof(char) * (strlen(toAppend)+strlen(longBody)+1));
+				//longBody = (char*) realloc(longBody, sizeof(char) * (strlen(toAppend)+strlen(longBody)+1));
 
+				strcpy(longBody, longBodyBuffer);
+
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "Final after 2nd malloc");
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "Final longbody: %s", longBody);
 
 				strcat(longBody, toAppend);
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "Final after strcat");
+
 
 				if(thread_id_tuple->value->uint8 != GetSelectedThreadID())
 				{
@@ -427,6 +461,9 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 				}
 
 				current_thread.body = (char*)nt_Malloc(sizeof(char) * (strlen(longBody) + 1));
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "Final after 3rd malloc");
+
 				if(current_thread.body == NULL)
 				{
 					goto body_fail;
@@ -434,6 +471,13 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 				}
 
 				strcpy(current_thread.body, longBody);
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "Final body: %s", current_thread.body);
+
+				free(longBody);
+				longBody = NULL;
+				free(longBodyBuffer);
+				longBodyBuffer = NULL;
 
 				// thread author
 				if(current_thread.thread_author != NULL)
@@ -483,7 +527,20 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 				char *toAppend = (char*) nt_Malloc(sizeof(char) * (strlen(thread_body_tuple->value->cstring)-3));
 				strncpy(toAppend, thread_body_tuple->value->cstring, strlen(thread_body_tuple->value->cstring)-4);
 
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "Appending: %s", toAppend);
+
+				//free(longBodyBuffer);
+
+				longBodyBuffer = (char*) nt_Malloc(sizeof(char) * (strlen(longBody)+1));
+				strcpy(longBodyBuffer, longBody);
+
+
 				longBody = (char*) nt_Malloc(sizeof(char) * (strlen(toAppend)+strlen(longBody)+1));
+				//longBody = (char*) realloc(longBody, sizeof(char) * (strlen(toAppend)+strlen(longBody)+1));
+
+				strcpy(longBody, longBodyBuffer);
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "After append");
 
 
 				strcat(longBody, toAppend);

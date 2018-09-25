@@ -44,7 +44,16 @@ void loading_init()
 
 void loading_uninit()
 {
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "loading_uninit_start");
+
+	bool onstack = loading_visible();
+
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "on stack: %s", onstack ? "true":"false");
+
 	window_stack_remove(window_loading, false);
+	//window_stack_remove(window_stack_get_top_window(), false);
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "loading_uninit_end");
+
 }
 
 void loading_window_load(Window *window)

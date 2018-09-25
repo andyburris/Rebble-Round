@@ -408,7 +408,7 @@ function SubredditList_Load()
 function Thread_Load(subreddit, id, index)
 {
 	//console.log("Thread_Load: " + id);
-
+	var alreadySent = false;
 	nt_InitAppMessageQueue(THREAD_QUEUE);
 
 	var url;
@@ -450,11 +450,16 @@ function Thread_Load(subreddit, id, index)
 
 					var filtered_body = selftext.replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, '');
 
+					if(filtered_body.length === 0 && !multiMessage)
+					{
+						filtered_body = "Empty self post";
+					}
+
 					var trimmed_body = filtered_body.substr(0, chunkSize - 128).trim();
 					//var trimmed_body = selftext;
-					console.log(filtered_body);
-					console.log(trimmed_body);
 
+					//console.log(filtered_body);
+					//console.log(trimmed_body);
 
 
 
@@ -462,13 +467,13 @@ function Thread_Load(subreddit, id, index)
 						multiMessage = true;
 						remainingString = filtered_body.substr(chunkSize - 128, filtered_body.length);
 
-						while(trimmed_body.substr(trimmed_body.length-4, trimmed_body.length)=="/||/"){
-							trimmed_body = trimmed_body.substr(0,trimmed_body.length-4)
-							remainingString = "/||/" + remainingString;
+						while(trimmed_body.substr(trimmed_body.length-4, trimmed_body.length)=="mlti"){
+						trimmed_body = trimmed_body.substr(0,trimmed_body.length-4)
+						remainingString = "mlti" + remainingString;
 						}
 
 						console.log(remainingString);
-						trimmed_body.append("/||/");
+						trimmed_body = trimmed_body + "mlti";
 						console.log(trimmed_body);
 
 						sendAppMessageEx(THREAD_QUEUE, {
@@ -476,6 +481,10 @@ function Thread_Load(subreddit, id, index)
 							"title": child["author"],
 							"thread_body" : trimmed_body
 						});
+						alreadySent = true;
+
+						console.log("Message Sent");
+
 
 						Thread_Load(subreddit, id, index);
 
@@ -485,16 +494,15 @@ function Thread_Load(subreddit, id, index)
 					}
 
 
-					if(trimmed_body.length === 0)
-					{
-						trimmed_body = "Empty self post";
-					}
 
-					sendAppMessageEx(THREAD_QUEUE, {
+
+					if(!alreadySent){
+						sendAppMessageEx(THREAD_QUEUE, {
 						"id": index,
 						"title": child["author"],
 						"thread_body" : trimmed_body
-					});
+						});
+					}
 
 				}
 
