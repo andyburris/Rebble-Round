@@ -474,10 +474,33 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 
 				APP_LOG(APP_LOG_LEVEL_DEBUG, "Final body: %s", current_thread.body);
 
-				free(longBody);
+				nt_Free(longBody);
 				longBody = NULL;
-				free(longBodyBuffer);
+				nt_Free(longBodyBuffer);
 				longBodyBuffer = NULL;
+				nt_Free(recievedString);
+				recievedString = NULL;
+				nt_Free(multi);
+				multi = NULL;
+				nt_Free(toAppend);
+				toAppend = NULL;
+
+				if(longBody!=NULL){
+					APP_LOG(APP_LOG_LEVEL_DEBUG, "longBody not null");
+				}
+				if(longBodyBuffer!=NULL){
+					APP_LOG(APP_LOG_LEVEL_DEBUG, "longBodyBuffer not null");
+				}
+				if(recievedString!=NULL){
+					APP_LOG(APP_LOG_LEVEL_DEBUG, "recievedString not null");
+				}
+				if(multi!=NULL){
+					APP_LOG(APP_LOG_LEVEL_DEBUG, "multi not null");
+				}
+				if(toAppend!=NULL){
+					APP_LOG(APP_LOG_LEVEL_DEBUG, "toAppend not null");
+				}
+
 
 				// thread author
 				if(current_thread.thread_author != NULL)
