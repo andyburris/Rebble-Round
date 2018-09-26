@@ -21,4 +21,6 @@ void thread_display_image(GBitmap *image);
 
 void thread_update_comments_position();
 
+bool getThreadType();
+
 #endif

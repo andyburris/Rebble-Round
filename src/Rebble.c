@@ -172,6 +172,25 @@ void SaveThread(int index)
 	app_message_outbox_send();
 }
 
+void ZoomImage(int index){
+	DEBUG_MSG("ZoomImage");
+	Tuplet tuple = TupletInteger(ZOOM_IMAGE, index);
+
+	DictionaryIterator *iter;
+	app_message_outbox_begin(&iter);
+
+	if (iter == NULL)
+	{
+		return;
+	}
+
+	dict_write_tuplet(iter, &tuple);
+
+	app_message_outbox_send();
+
+}
+
+
 /*******************************
     Memory Utilities
 ********************************/

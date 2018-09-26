@@ -59,6 +59,7 @@ enum
 	THREAD_UPVOTE = 0x8,
 	THREAD_DOWNVOTE = 0x9,
 	THREAD_SAVE = 0xA,
+	ZOOM_IMAGE = 0x14,
 
 	USER_SUBREDDIT = 0xB,
 
@@ -126,6 +127,7 @@ void LoadThreadNext();
 void UpvoteThread(int index);
 void DownvoteThread(int index);
 void SaveThread(int index);
+void ZoomImage(int index);
 
 #ifdef DEBUG_MODE
 void* nt_Malloc_Raw(size_t size, const char* function, int line);

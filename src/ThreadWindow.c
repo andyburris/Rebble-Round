@@ -399,3 +399,8 @@ void thread_update_comments_position()
 
 	scroll_layer_set_content_size(thread_scroll_layer, scroll_layer_size);
 }
+
+bool getThreadType(){
+	struct ThreadData *thread = GetSelectedThread();
+	return thread->type;
+}
