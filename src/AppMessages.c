@@ -21,6 +21,7 @@ bool refreshSubreddit = false;
 
 char* longBody = "";
 char* longBodyBuffer = "";
+char* toAppend = "";
 bool longMessage = false;
 
 static void in_received_handler(DictionaryIterator *iter, void *context);
@@ -419,7 +420,7 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 
 				longMessage = false;
 
-				char *toAppend = (char*) nt_Malloc(sizeof(char) * (strlen(thread_body_tuple->value->cstring)+1));
+				toAppend = (char*) nt_Malloc(sizeof(char) * (strlen(thread_body_tuple->value->cstring)+1));
 
 				APP_LOG(APP_LOG_LEVEL_DEBUG, "Final after malloc");
 
@@ -547,19 +548,24 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 				APP_LOG(APP_LOG_LEVEL_DEBUG, "Long post");
 
 
-				char *toAppend = (char*) nt_Malloc(sizeof(char) * (strlen(thread_body_tuple->value->cstring)-3));
+				toAppend =  nt_Malloc(sizeof(char) * (strlen(thread_body_tuple->value->cstring)-3));
 				strncpy(toAppend, thread_body_tuple->value->cstring, strlen(thread_body_tuple->value->cstring)-4);
 
 				APP_LOG(APP_LOG_LEVEL_DEBUG, "Appending: %s", toAppend);
 
 				//free(longBodyBuffer);
 
-				longBodyBuffer = (char*) nt_Malloc(sizeof(char) * (strlen(longBody)+1));
+				longBodyBuffer =  nt_Malloc(sizeof(char) * (strlen(longBody)+1));
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "Long after buffer malloc");
+
 				strcpy(longBodyBuffer, longBody);
 
 
 				longBody = (char*) nt_Malloc(sizeof(char) * (strlen(toAppend)+strlen(longBody)+1));
 				//longBody = (char*) realloc(longBody, sizeof(char) * (strlen(toAppend)+strlen(longBody)+1));
+
+				APP_LOG(APP_LOG_LEVEL_DEBUG, "Long after non-buffer malloc");
 
 				strcpy(longBody, longBodyBuffer);
 
@@ -569,6 +575,11 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 				strcat(longBody, toAppend);
 
 				longMessage = true;
+
+				/*nt_Free(longBodyBuffer);
+				longBodyBuffer = NULL;
+				nt_Free(toAppend);
+				toAppend = NULL;*/
 			}
 		}
 		else
