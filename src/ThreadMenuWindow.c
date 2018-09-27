@@ -6,6 +6,7 @@
 #include "SubredditWindow.h"
 #include "ThreadMenuWindow.h"
 #include "ThreadWindow.h"
+#include "ZoomWindow.h"
 
 Window *window_threadmenu;
 
@@ -92,34 +93,41 @@ static void threadmenu_menu_draw_row_callback(GContext* ctx, const Layer *cell_l
 
 static void threadmenu_menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *data)
 {
-	if(!IsLoggedIn() && cell_index->row != 3)
-	{
-		vibes_double_pulse();
-		return;
-	}
 
 	int selected = GetSelectedThreadID();
 
-	switch (cell_index->row)
-	{
-	case 0:
-		UpvoteThread(selected);
-		break;
 
-	case 1:
-		DownvoteThread(selected);
-		break;
+	if(cell_index->row != 3){
+		if(!IsLoggedIn())
+		{
+			vibes_double_pulse();
+			return;
+		}
 
-	case 2:
-		SaveThread(selected);
-		break;
-	case 3:
+
+		switch (cell_index->row)
+		{
+			case 0:
+			UpvoteThread(selected);
+			break;
+
+			case 1:
+			DownvoteThread(selected);
+			break;
+
+			case 2:
+			SaveThread(selected);
+			break;
+
+		}
+
+
+		vibes_short_pulse();
+
+		window_stack_pop(true);
+	}else{
+
 		ZoomImage(selected);
-		break;
+		zoom_load();
 	}
-
-
-	vibes_short_pulse();
-
-	window_stack_pop(true);
 }

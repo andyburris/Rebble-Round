@@ -860,6 +860,9 @@ try
 	{
 		Thread_Save(e.payload.save);
 	}
+	else if("zoom" in e.payload) {
+		Image_Zoom(e.paload.zoom);
+	}
 	else if("load_subredditlist" in e.payload)
 	{
 		SubredditList_Load();
