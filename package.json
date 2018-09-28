@@ -49,6 +49,7 @@
       "NETIMAGE_URL": 1768777476,
       "score": 5,
       "save": 10,
+      "zoom": 20,
       "user_subreddit": 11,
       "chunk_size": 14,
       "downvote": 9,
@@ -58,7 +59,13 @@
       "NETIMAGE_END": 1768777474,
       "thread_subreddit": 16,
       "load_subredditlist": 13,
-      "NETIMAGE_BEGIN": 1768777473
+      "NETIMAGE_BEGIN": 1768777473,
+      "ZOOMIMAGE_BEGIN": 1768777477,
+      "ZOOMIMAGE_DATA": 1768777478,
+      "ZOOMIMAGE_END": 1768777479
+
+
+
     },
     "enableMultiJS": false,
     "displayName": "Rebble",

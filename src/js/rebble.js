@@ -347,6 +347,16 @@ function SubredditList_Send(res)
 	sendAppMessageEx(SUBREDDITLIST_QUEUE, { "user_subreddit": huge_message });
 }
 
+function Image_Zoom(url, chunkSize){
+	console.log("Image Zoom Requested");
+	SendImage(url, chunkSize - 8, true);
+}
+
+
+
+
+
+
 function SubredditList_Load()
 {
 	//console.log("SubredditList_Load");
@@ -824,7 +834,7 @@ try
 
 		//SendImage("http://core.binghamton.edu:2635/?url=" + url, chunkSize);
 		//SendImage("http://garywilber.com:2635/?url=" + url, chunkSize - 8);
-		SendImage(url, chunkSize - 8);
+		SendImage(url, chunkSize - 8, false);
 	}
 	else if ("subreddit" in e.payload)
 	{
@@ -861,7 +871,16 @@ try
 		Thread_Save(e.payload.save);
 	}
 	else if("zoom" in e.payload) {
-		Image_Zoom(e.paload.zoom);
+
+		threadCommentsIndex = e.payload['zoom'];
+
+		var url = GetThreadURL(e.payload['zoom']);
+
+		transferInProgress = true;
+		transferInProgressURL = url;
+
+
+		Image_Zoom(url, chunkSize);
 	}
 	else if("load_subredditlist" in e.payload)
 	{
@@ -1016,7 +1035,7 @@ function LoadImageComments(dir)
 	);
 }
 
-function SendImage(url, chunkSize)
+function SendImage(url, chunkSize, zoom)
 {
 	//console.log("SendImage: " + chunkSize);
 
@@ -1029,5 +1048,5 @@ function SendImage(url, chunkSize)
 
 	nt_InitAppMessageQueue(NET_IMAGE_QUEUE);
 
-	getImage(url, chunkSize);
+	getImage(url, chunkSize, zoom);
 }

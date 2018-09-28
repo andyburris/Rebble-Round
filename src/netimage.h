@@ -4,6 +4,7 @@
 #include <pebble.h>
 
 /* The key used to transmit image data. Contains byte array. */
+//hexadecimal of decimal in package.json
 #define NETIMAGE_DATA 0x696d6700 /* "img" */
 /* The key used to start a new image transmission. Contains uint32 size */
 #define NETIMAGE_BEGIN NETIMAGE_DATA + 1
@@ -14,6 +15,12 @@
 #define NETIMAGE_CHUNK_SIZE NETIMAGE_DATA + 3
 /* The key used to request a PBI */
 #define NETIMAGE_URL NETIMAGE_DATA + 4
+
+#define ZOOMIMAGE_BEGIN NETIMAGE_DATA + 5
+#define ZOOMIMAGE_DATA NETIMAGE_DATA + 6
+#define ZOOMIMAGE_END NETIMAGE_DATA + 7
+
+
 
 typedef void (*NetImageCallback)(GBitmap *image);
 

@@ -1,16 +1,29 @@
 var DOWNLOAD_TIMEOUT = 20000;
 
-function sendBitmap(bitmap, chunkSize){
-  sendAppMessageEx(NET_IMAGE_QUEUE, {"NETIMAGE_BEGIN": bitmap.length});
+function sendBitmap(bitmap, chunkSize, zoom){
 
-  for(var i=0; i < bitmap.length; i += chunkSize){
-    sendAppMessageEx(NET_IMAGE_QUEUE, {"NETIMAGE_DATA": bitmap.slice(i, i + chunkSize)});
+  if(zoom){
+    console.log("sending zoomed image");
+    sendAppMessageEx(NET_IMAGE_QUEUE, {"ZOOMIMAGE_BEGIN": bitmap.length});
+
+    for(var i=0; i < bitmap.length; i += chunkSize){
+      sendAppMessageEx(NET_IMAGE_QUEUE, {"ZOOMIMAGE_DATA": bitmap.slice(i, i + chunkSize)});
+    }
+
+    sendAppMessageEx(NET_IMAGE_QUEUE, {"ZOOMIMAGE_END": "done"});
+  }else{
+    console.log("sending regular image");
+    sendAppMessageEx(NET_IMAGE_QUEUE, {"NETIMAGE_BEGIN": bitmap.length});
+
+    for(var i=0; i < bitmap.length; i += chunkSize){
+      sendAppMessageEx(NET_IMAGE_QUEUE, {"NETIMAGE_DATA": bitmap.slice(i, i + chunkSize)});
+    }
+
+    sendAppMessageEx(NET_IMAGE_QUEUE, {"NETIMAGE_END": "done"});
   }
-
-  sendAppMessageEx(NET_IMAGE_QUEUE, {"NETIMAGE_END": "done"});
 }
 
-function convertImage(rgbaPixels, numComponents, width, height){
+function convertImage(rgbaPixels, numComponents, width, height, zoom){
 
   var watch_info;
   if(Pebble.getActiveWatchInfo) {
@@ -19,15 +32,32 @@ function convertImage(rgbaPixels, numComponents, width, height){
     watch_info = { 'platform' : 'aplite'};
   }
 
-  var ratio = Math.min(144 / width,168 / height);
-  var ratio = Math.min(ratio,1);
+  var color = true;
+
+  if(watch_info.platform === 'aplite')  {
+    color = false;
+  }
+
+  if(watch_info.platform === 'diorite'){
+    color = false;
+  }
+
+  var ratio;
+
+  if(!zoom){
+    ratio = Math.min(144 / width,168 / height);
+    ratio = Math.min(ratio,1);
+  }else{
+    ratio = 1;
+  }
+
 
   var final_width = Math.floor(width * ratio);
   var final_height = Math.floor(height * ratio);
   var final_pixels = [];
   var bitmap = [];
 
-  if(watch_info.platform === 'aplite') {
+  if(!color){
     var grey_pixels = greyScale(rgbaPixels, width, height, numComponents);
     ScaleRect(final_pixels, grey_pixels, width, height, final_width, final_height, 1);
     floydSteinberg(final_pixels, final_width, final_height, pebble_nearest_color_to_black_white);
@@ -45,7 +75,7 @@ function convertImage(rgbaPixels, numComponents, width, height){
   return bitmap;
 }
 
-function getPbiImage(url, chunkSize){
+function getPbiImage(url, chunkSize, zoom){
   var xhr = new XMLHttpRequest();
   xhr.open("GET", url, true);
   xhr.responseType = "arraybuffer";
@@ -57,7 +87,7 @@ function getPbiImage(url, chunkSize){
       for(var i=0; i<data.byteLength; i++) {
         bitmap.push(data[i]);
       }
-      sendBitmap(bitmap, chunkSize);
+      sendBitmap(bitmap, chunkSize, zoom);
     } else {
       sendAppMessageEx(NET_IMAGE_QUEUE, {"NETIMAGE_BEGIN": 0});
       sendAppMessageEx(NET_IMAGE_QUEUE, {"NETIMAGE_END": "done"});
@@ -72,7 +102,7 @@ function getPbiImage(url, chunkSize){
   xhr.send(null);
 }
 
-function getGifImage(url, chunkSize){
+function getGifImage(url, chunkSize, zoom){
   var xhr = new XMLHttpRequest();
   xhr.open("GET", url, true);
   xhr.responseType = "arraybuffer";
@@ -86,9 +116,9 @@ function getGifImage(url, chunkSize){
     var pixels = [];
     gr.decodeAndBlitFrameRGBA(0, pixels);
 
-    var bitmap = convertImage(pixels, 4, gr.width, gr.height);
+    var bitmap = convertImage(pixels, 4, gr.width, gr.height, zoom);
 
-    sendBitmap(bitmap, chunkSize);
+    sendBitmap(bitmap, chunkSize, zoom);
   };
 
   var xhrTimeout = setTimeout(function() {
@@ -99,7 +129,7 @@ function getGifImage(url, chunkSize){
   xhr.send(null);
 }
 
-function getJpegImage(url, chunkSize){
+function getJpegImage(url, chunkSize, zoom){
   var j = new JpegImage();
   j.onload = function() {
     clearTimeout(xhrTimeout); // got response, no more need in timeout
@@ -108,9 +138,9 @@ function getJpegImage(url, chunkSize){
 
     var pixels = j.getData(j.width, j.height);
 
-    var bitmap = convertImage(pixels, 3, j.width, j.height);
+    var bitmap = convertImage(pixels, 3, j.width, j.height, zoom);
 
-    sendBitmap(bitmap, chunkSize);    
+    sendBitmap(bitmap, chunkSize, zoom);
   };
 
   var xhrTimeout = setTimeout(function() {
@@ -125,7 +155,7 @@ function getJpegImage(url, chunkSize){
   }
 }
 
-function getPngImage(url, chunkSize){
+function getPngImage(url, chunkSize, zoom){
   var xhr = new XMLHttpRequest();
   xhr.open("GET", url, true);
   xhr.responseType = "arraybuffer";
@@ -148,14 +178,14 @@ function getPngImage(url, chunkSize){
         png_arr.push(palette[3*pixels[i]+1] & 0xFF);
         png_arr.push(palette[3*pixels[i]+2] & 0xFF);
       }
-      bitmap = convertImage(png_arr, 3, width, height);
+      bitmap = convertImage(png_arr, 3, width, height, zoom);
     }
     else {
       var components = pixels.length /( width*height);
-      bitmap = convertImage(pixels, components, width, height);
+      bitmap = convertImage(pixels, components, width, height, zoom);
     }
 
-    sendBitmap(bitmap, chunkSize);
+    sendBitmap(bitmap, chunkSize, zoom);
   };
 
   var xhrTimeout = setTimeout(function() {
@@ -170,22 +200,22 @@ function endsWith(str, suffix) {
     return str.indexOf(suffix, str.length - suffix.length) !== -1;
 }
 
-function getImage(url, chunkSize){
+function getImage(url, chunkSize, zoom){
   console.log("Image URL : "+ url);
 
   if(endsWith(url, ".pbi")){
-    getPbiImage(url, chunkSize);
+    getPbiImage(url, chunkSize, zoom);
   }
   else if(endsWith(url, ".gif") || endsWith(url, ".GIF")){
-    getGifImage(url, chunkSize);
+    getGifImage(url, chunkSize, zoom);
   }
   else if(endsWith(url, ".jpg") || endsWith(url, ".jpeg") || endsWith(url, ".JPG") || endsWith(url, ".JPEG")){
-    getJpegImage(url, chunkSize);
+    getJpegImage(url, chunkSize, zoom);
   }
   else if(endsWith(url, ".png") || endsWith(url, ".PNG")){
-    getPngImage(url, chunkSize);
+    getPngImage(url, chunkSize, zoom);
   }
   else {
-    getJpegImage(url, chunkSize);
+    getJpegImage(url, chunkSize, zoom);
   }
 }

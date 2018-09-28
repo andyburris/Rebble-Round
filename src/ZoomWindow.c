@@ -18,6 +18,8 @@ ScrollLayer *image_pan_layer;
 
 BitmapLayer *zoom_bitmap_layer;
 
+GBitmap *image;
+
 static void zoom_click_config(void *context);
 static void zoom_offset_changed_handler(ScrollLayer *scroll_layer, void *context);
 static void zoom_button_up(ClickRecognizerRef recognizer, void *context);
@@ -110,10 +112,10 @@ void zoom_window_unload(Window *window)
 
 	free_netimage();
 
-	if (current_thread.image != NULL)
+	if (image != NULL)
 	{
-		gbitmap_destroy(current_thread.image);
-		current_thread.image = NULL;
+		gbitmap_destroy(image);
+		image = NULL;
 	}
 
 
@@ -126,9 +128,10 @@ void zoom_window_unload(Window *window)
 	scroll_layer_destroy(image_pan_layer);
 }
 
-void zoom_display_image(GBitmap *image)
+
+void zoom_display_image(GBitmap *inputimage)
 {
-	if(image == NULL)
+	if(inputimage == NULL)
 	{
 		loading_disable_dots();
 		loading_set_text("Unable to load image");
@@ -137,13 +140,13 @@ void zoom_display_image(GBitmap *image)
 
 	zoom_load_finished();
 
-	if (current_thread.image)
+	if (image)
 	{
-		gbitmap_destroy(current_thread.image);
+		gbitmap_destroy(image);
 		DEBUG_MSG("gbitmap_destroy 1");
 	}
 
-	current_thread.image = image;
+	image = inputimage;
 
 	if(zoom_bitmap_layer == NULL)
 	{
@@ -180,4 +183,106 @@ static void zoom_button_select(ClickRecognizerRef recognizer, void *context)
 static void zoom_button_down(ClickRecognizerRef recognizer, void *context)
 {
 
+}
+
+
+
+/***************************************************
+zoomimage functions
+***************************************************/
+
+void zoomimage_receive(DictionaryIterator *iter)
+{
+
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "received");
+
+	NetImageContext *ctx = get_zoomimage_context();
+
+	Tuple *tuple = dict_read_first(iter);
+
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "read");
+
+	if (!tuple)
+	{
+		APP_LOG(APP_LOG_LEVEL_DEBUG, "Error");
+		DEBUG_MSG("Got a message with no first key! Size of message: %li", (uint32_t)iter->end - (uint32_t)iter->dictionary);
+		return;
+	}
+
+	switch (tuple->key)
+	{
+		case ZOOMIMAGE_DATA:
+			APP_LOG(APP_LOG_LEVEL_DEBUG, "Middle of zoomimage");
+
+			if (ctx->index + tuple->length <= ctx->length)
+			{
+				memcpy(ctx->data + ctx->index, tuple->value->data, tuple->length);
+				ctx->index += tuple->length;
+			}
+			else
+			{
+				DEBUG_MSG("Not overriding rx buffer. Bufsize=%li BufIndex=%li DataLen=%i",
+						ctx->length, ctx->index, tuple->length);
+			}
+			break;
+		case ZOOMIMAGE_BEGIN:
+			APP_LOG(APP_LOG_LEVEL_DEBUG, "Beginning of zoomimage");
+
+			DEBUG_MSG("Start transmission. Size=%lu", tuple->value->uint32);
+			if (ctx->data != NULL)
+			{
+				nt_Free(ctx->data);
+			}
+			if(tuple->value->uint32 == 0)
+			{
+				ctx->data = NULL;
+				break;
+			}
+			ctx->data = nt_Malloc(tuple->value->uint32);
+			if (ctx->data != NULL)
+			{
+				ctx->length = tuple->value->uint32;
+				ctx->index = 0;
+			}
+			else
+			{
+				DEBUG_MSG("Unable to allocate memory to receive image.");
+				ctx->length = 0;
+				ctx->index = 0;
+			}
+			break;
+		case ZOOMIMAGE_END:
+			APP_LOG(APP_LOG_LEVEL_DEBUG, "End of zoomimage");
+
+			if (ctx->data && ctx->length > 0 && ctx->index > 0)
+			{
+				#ifdef PBL_BW
+					GBitmap *bitmap = gbitmap_create_with_data(ctx->data);
+				#else
+					GBitmap *bitmap = gbitmap_create_from_png_data(ctx->data, ctx->length);
+				#endif
+				nt_Free(ctx->data);
+				if (bitmap)
+				{
+					APP_LOG(APP_LOG_LEVEL_DEBUG, "Running callback");
+					ctx->callback(bitmap);
+				}
+				else
+				{
+					ctx->callback(NULL);
+					DEBUG_MSG("Unable to create GBitmap. Is this a valid PBI?");
+				}
+				ctx->data = NULL;
+				ctx->index = ctx->length = 0;
+			}
+			else
+			{
+				ctx->callback(NULL);
+				DEBUG_MSG("Got End message but we have no image...");
+			}
+			break;
+		default:
+			DEBUG_MSG("Unknown key in dict: %lu", tuple->key);
+			break;
+	}
 }

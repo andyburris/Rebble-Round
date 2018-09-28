@@ -9,6 +9,7 @@
 #include "SubredditListWindow.h"
 #include "CommentWindow.h"
 #include "netimage.h"
+#include "ZoomWindow.h"
 #include "LoadingWindow.h"
 
 extern struct ViewThreadData current_thread;
@@ -26,9 +27,16 @@ static void app_message_send_ready_reply();
 
 static void in_received_handler(DictionaryIterator *iter, void *context)
 {
+
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "message received");
+
 	Tuple *netimage_begin = dict_find(iter, NETIMAGE_BEGIN);
 	Tuple *netimage_data = dict_find(iter, NETIMAGE_DATA);
 	Tuple *netimage_end = dict_find(iter, NETIMAGE_END);
+
+	Tuple *zoomimage_begin = dict_find(iter, ZOOMIMAGE_BEGIN);
+	Tuple *zoomimage_data = dict_find(iter, ZOOMIMAGE_DATA);
+	Tuple *zoomimage_end = dict_find(iter, ZOOMIMAGE_END);
 
 	//DEBUG_MSG("in_received_handler");
 
@@ -41,7 +49,24 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 		else
 		{
 			//DEBUG_MSG("null get_netimage_context");
-		}	
+		}
+		return;
+	}
+
+	if(zoomimage_begin || zoomimage_data || zoomimage_end)
+	{
+
+		APP_LOG(APP_LOG_LEVEL_DEBUG, "zoom image received");
+		if(get_zoomimage_context() != NULL)
+		{
+			APP_LOG(APP_LOG_LEVEL_DEBUG, "not null");
+			zoomimage_receive(iter);
+		}
+		else
+		{
+			APP_LOG(APP_LOG_LEVEL_DEBUG, "null");
+			//DEBUG_MSG("null get_netimage_context");
+		}
 		return;
 	}
 
@@ -116,7 +141,7 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 		if(current_thread.author == NULL)
 		{
 			goto comment_load_failure;
-		}		
+		}
 
 		current_thread.score = (char*)nt_Malloc(sizeof(char) * (strlen(thread_score_tuple->value->cstring) + 1));
 		if(current_thread.score == NULL)
@@ -152,7 +177,7 @@ comment_load_failure:
 			loading_disable_dots();
 			loading_set_text("Unable to load comments");
 		}
-		
+
 		return;
 	}
 
@@ -240,7 +265,7 @@ done:
 		subredditlist_init();
 
 done_skip:
-		return;		
+		return;
 	}
 
 	if(thread_type_tuple && thread_type_tuple->value->uint8 == 255)
@@ -267,7 +292,7 @@ done_skip:
 		}
 
 		struct ThreadData *thread = &threads[thread_loaded];
-		
+
 		SetThreadTitle(thread, thread_loaded, thread_title_tuple->value->cstring);
 		SetThreadScore(thread, thread_loaded, thread_score_tuple->value->cstring);
 		SetThreadSubreddit(thread, thread_loaded, thread_subreddit_tuple ? thread_subreddit_tuple->value->cstring : NULL);
@@ -279,7 +304,7 @@ done_skip:
 		thread_loaded++;
 
 		scroll_layer_set_content_size(subreddit_scroll_layer, GSize(144, thread_loaded * (THREAD_WINDOW_HEIGHT + THREAD_LAYER_PADDING) + THREAD_WINDOW_HEIGHT_SELECTED + THREAD_LAYER_PADDING));
-		
+
 		if(thread_loaded == 1)
 		{
 			subreddit_selection_changed(false);
@@ -474,9 +499,9 @@ static void app_message_send_ready_reply()
 	if(refreshSubreddit)
 	{
 		refreshSubreddit = false;
-		
+
 		subreddit_load_setup();
-		
+
 		Tuplet tuple = TupletCString(VIEW_SUBREDDIT, "0");
 
 		dict_write_tuplet(iter, &tuple);

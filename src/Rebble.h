@@ -127,7 +127,9 @@ void LoadThreadNext();
 void UpvoteThread(int index);
 void DownvoteThread(int index);
 void SaveThread(int index);
+
 void ZoomImage(int index);
+void init_zoomimage(int index);
 
 #ifdef DEBUG_MODE
 void* nt_Malloc_Raw(size_t size, const char* function, int line);
@@ -152,6 +154,11 @@ void init_netimage(int index);
 void callback_netimage(GBitmap *image);
 NetImageContext* get_netimage_context();
 void free_netimage();
+
+void init_zoomimage(int index);
+void callback_zoomimage(GBitmap *image);
+NetImageContext* get_zoomimage_context();
+void free_zoomimage();
 
 void init_timer(AppTimer *handle);
 void cancel_timer();

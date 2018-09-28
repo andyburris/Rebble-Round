@@ -127,7 +127,7 @@ static void threadmenu_menu_select_callback(MenuLayer *menu_layer, MenuIndex *ce
 		window_stack_pop(true);
 	}else{
 
-		ZoomImage(selected);
+		init_zoomimage(selected);
 		zoom_load();
 	}
 }

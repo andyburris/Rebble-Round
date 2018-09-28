@@ -11,12 +11,15 @@
 #include "CommentWindow.h"
 #include "AppMessages.h"
 #include "netimage.h"
+#include "ZoomWindow.h"
 
 bool loggedIn = false;
 
 int selectedThread = 0;
 AppTimer *timerHandle = NULL;
 NetImageContext *netimage_ctx = NULL;
+NetImageContext *zoomimage_ctx = NULL;
+
 
 #ifdef USE_PERSIST_STRINGS
 char persist_index_title = -1;
@@ -396,7 +399,7 @@ void init_netimage(int index)
 
 void callback_netimage(GBitmap *image)
 {
-	DEBUG_MSG("callback_netimage");
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "callback_netimage");
 	thread_display_image(image);
 }
 
@@ -411,6 +414,39 @@ void free_netimage()
 	{
 		netimage_destroy_context(netimage_ctx);
 		netimage_ctx = NULL;
+	}
+}
+
+/*******************************
+    Zoom Image
+********************************/
+
+void init_zoomimage(int index)
+{
+	DEBUG_MSG("init_zoomimage %d", index);
+	free_zoomimage();
+	zoomimage_ctx = netimage_create_context(callback_zoomimage);
+	ZoomImage(index);
+}
+
+void callback_zoomimage(GBitmap *inputimage)
+{
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "callback_zoomimage");
+	zoom_display_image(inputimage);
+}
+
+NetImageContext *get_zoomimage_context()
+{
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "context_zoomimage");
+	return zoomimage_ctx;
+}
+
+void free_zoomimage()
+{
+	if(zoomimage_ctx != NULL)
+	{
+		netimage_destroy_context(zoomimage_ctx);
+		zoomimage_ctx = NULL;
 	}
 }
 

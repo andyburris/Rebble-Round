@@ -5,6 +5,8 @@
 
 void zoom_load();
 void zoom_window_init();
+void zoomimage_receive(DictionaryIterator *iter);
+void zoom_display_image(GBitmap *inputimage);
 
 
 #endif
