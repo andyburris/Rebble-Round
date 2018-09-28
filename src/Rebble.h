@@ -26,7 +26,7 @@
 #define PERSIST_OFFSET_THREAD_SUBREDDIT 6144
 #endif
 
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 #ifdef DEBUG_MODE
 	#define DEBUG_MSG(args...) APP_LOG(APP_LOG_LEVEL_DEBUG, args)

@@ -28,7 +28,7 @@ static void app_message_send_ready_reply();
 static void in_received_handler(DictionaryIterator *iter, void *context)
 {
 
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "message received");
+	DEBUG_MSG( "message received");
 
 	Tuple *netimage_begin = dict_find(iter, NETIMAGE_BEGIN);
 	Tuple *netimage_data = dict_find(iter, NETIMAGE_DATA);
@@ -56,15 +56,15 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 	if(zoomimage_begin || zoomimage_data || zoomimage_end)
 	{
 
-		APP_LOG(APP_LOG_LEVEL_DEBUG, "zoom image received");
+		DEBUG_MSG( "zoom image received");
 		if(get_zoomimage_context() != NULL)
 		{
-			APP_LOG(APP_LOG_LEVEL_DEBUG, "not null");
+			DEBUG_MSG( "not null");
 			zoomimage_receive(iter);
 		}
 		else
 		{
-			APP_LOG(APP_LOG_LEVEL_DEBUG, "null");
+			DEBUG_MSG( "null");
 			//DEBUG_MSG("null get_netimage_context");
 		}
 		return;

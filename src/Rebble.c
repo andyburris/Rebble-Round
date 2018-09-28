@@ -399,7 +399,7 @@ void init_netimage(int index)
 
 void callback_netimage(GBitmap *image)
 {
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "callback_netimage");
+	DEBUG_MSG( "callback_netimage");
 	thread_display_image(image);
 }
 
@@ -431,13 +431,13 @@ void init_zoomimage(int index)
 
 void callback_zoomimage(GBitmap *inputimage)
 {
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "callback_zoomimage");
+	DEBUG_MSG( "callback_zoomimage");
 	zoom_display_image(inputimage);
 }
 
 NetImageContext *get_zoomimage_context()
 {
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "context_zoomimage");
+	DEBUG_MSG( "context_zoomimage");
 	return zoomimage_ctx;
 }
 

@@ -194,17 +194,17 @@ zoomimage functions
 void zoomimage_receive(DictionaryIterator *iter)
 {
 
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "received");
+	DEBUG_MSG( "received");
 
-	NetImageContext *ctx = get_zoomimage_context();
+	NetImageContext *zoomctx = get_zoomimage_context();
 
 	Tuple *tuple = dict_read_first(iter);
 
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "read");
+	DEBUG_MSG( "read");
 
 	if (!tuple)
 	{
-		APP_LOG(APP_LOG_LEVEL_DEBUG, "Error");
+		DEBUG_MSG( "Error");
 		DEBUG_MSG("Got a message with no first key! Size of message: %li", (uint32_t)iter->end - (uint32_t)iter->dictionary);
 		return;
 	}
@@ -212,73 +212,83 @@ void zoomimage_receive(DictionaryIterator *iter)
 	switch (tuple->key)
 	{
 		case ZOOMIMAGE_DATA:
-			APP_LOG(APP_LOG_LEVEL_DEBUG, "Middle of zoomimage");
+			DEBUG_MSG( "Middle of zoomimage");
 
-			if (ctx->index + tuple->length <= ctx->length)
+			if (zoomctx->index + tuple->length <= zoomctx->length)
 			{
-				memcpy(ctx->data + ctx->index, tuple->value->data, tuple->length);
-				ctx->index += tuple->length;
+				memcpy(zoomctx->data + zoomctx->index, tuple->value->data, tuple->length);
+				zoomctx->index += tuple->length;
 			}
 			else
 			{
 				DEBUG_MSG("Not overriding rx buffer. Bufsize=%li BufIndex=%li DataLen=%i",
-						ctx->length, ctx->index, tuple->length);
+						zoomctx->length, zoomctx->index, tuple->length);
 			}
 			break;
 		case ZOOMIMAGE_BEGIN:
-			APP_LOG(APP_LOG_LEVEL_DEBUG, "Beginning of zoomimage");
+			DEBUG_MSG( "Beginning of zoomimage");
 
 			DEBUG_MSG("Start transmission. Size=%lu", tuple->value->uint32);
-			if (ctx->data != NULL)
+			if (zoomctx->data != NULL)
 			{
-				nt_Free(ctx->data);
+				nt_Free(zoomctx->data);
 			}
 			if(tuple->value->uint32 == 0)
 			{
-				ctx->data = NULL;
+				zoomctx->data = NULL;
 				break;
 			}
-			ctx->data = nt_Malloc(tuple->value->uint32);
-			if (ctx->data != NULL)
+			zoomctx->data = nt_Malloc(tuple->value->uint32);
+			if (zoomctx->data != NULL)
 			{
-				ctx->length = tuple->value->uint32;
-				ctx->index = 0;
+				zoomctx->length = tuple->value->uint32;
+				zoomctx->index = 0;
 			}
 			else
 			{
 				DEBUG_MSG("Unable to allocate memory to receive image.");
-				ctx->length = 0;
-				ctx->index = 0;
+				zoomctx->length = 0;
+				zoomctx->index = 0;
 			}
 			break;
 		case ZOOMIMAGE_END:
-			APP_LOG(APP_LOG_LEVEL_DEBUG, "End of zoomimage");
+			DEBUG_MSG( "End of zoomimage");
 
-			if (ctx->data && ctx->length > 0 && ctx->index > 0)
+			if (zoomctx->data && zoomctx->length > 0 && zoomctx->index > 0)
 			{
+
+				DEBUG_MSG( "Running GBitmap Create");
+
 				#ifdef PBL_BW
-					GBitmap *bitmap = gbitmap_create_with_data(ctx->data);
+					GBitmap *bitmap = gbitmap_create_with_data(zoomctx->data);
 				#else
-					GBitmap *bitmap = gbitmap_create_from_png_data(ctx->data, ctx->length);
+					GBitmap *bitmap = gbitmap_create_from_png_data(zoomctx->data, zoomctx->length);
 				#endif
-				nt_Free(ctx->data);
+				nt_Free(zoomctx->data);
 				if (bitmap)
 				{
-					APP_LOG(APP_LOG_LEVEL_DEBUG, "Running callback");
-					ctx->callback(bitmap);
+
+					if(bitmap==NULL){
+						DEBUG_MSG( "Created bitmap is null");
+
+					}
+
+					DEBUG_MSG( "Running callback");
+					zoomctx->callback(bitmap);
 				}
 				else
 				{
-					ctx->callback(NULL);
+					zoomctx->callback(NULL);
+					DEBUG_MSG( "Unable to create bitmap");
 					DEBUG_MSG("Unable to create GBitmap. Is this a valid PBI?");
 				}
-				ctx->data = NULL;
-				ctx->index = ctx->length = 0;
+				zoomctx->data = NULL;
+				zoomctx->index = zoomctx->length = 0;
 			}
 			else
 			{
-				ctx->callback(NULL);
-				DEBUG_MSG("Got End message but we have no image...");
+				zoomctx->callback(NULL);
+				DEBUG_MSG( "Got End message but we have no image...");
 			}
 			break;
 		default:
