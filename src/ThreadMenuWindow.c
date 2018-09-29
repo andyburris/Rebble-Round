@@ -13,6 +13,7 @@ Window *window_threadmenu;
 MenuLayer *threadmenu_menu_layer;
 
 bool isImage;
+bool reloadOnExit = false;
 
 static uint16_t threadmenu_menu_get_num_sections_callback(MenuLayer *menu_layer, void *data);
 static uint16_t threadmenu_menu_get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *data);
@@ -52,6 +53,10 @@ void threadmenu_window_load(Window *window)
 void threadmenu_window_unload(Window *window)
 {
 	menu_layer_destroy(threadmenu_menu_layer);
+	if(reloadOnExit){
+		reloadOnExit = false;
+		thread_load();
+	}
 }
 
 static uint16_t threadmenu_menu_get_num_sections_callback(MenuLayer *menu_layer, void *data)
@@ -128,6 +133,7 @@ static void threadmenu_menu_select_callback(MenuLayer *menu_layer, MenuIndex *ce
 	}else{
 
 		thread_window_unload(window_thread);
+		reloadOnExit = true;
 		init_zoomimage(selected);
 		zoom_load();
 	}

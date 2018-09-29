@@ -8,7 +8,7 @@ https://github.com/pebble-hacks/pebble-faces
 
 NetImageContext *netimage_create_context(NetImageCallback callback)
 {
-	NetImageContext *ctx = nt_Malloc(sizeof(NetImageContext));
+	NetImageContext *ctx = nt_Malloc(sizeof *ctx);
 
 	ctx->length = 0;
 	ctx->index = 0;
@@ -30,9 +30,9 @@ void netimage_destroy_context(NetImageContext *ctx)
 void netimage_request(int index)
 {
 	DictionaryIterator *outbox;
-	
+
 	app_message_outbox_begin(&outbox);
-	
+
 	dict_write_uint8(outbox, NETIMAGE_URL, (uint8_t)index);
 
 	DEBUG_MSG("NETIMAGE_URL %d", index);
@@ -121,4 +121,3 @@ void netimage_receive(DictionaryIterator *iter)
 			break;
 	}
 }
-

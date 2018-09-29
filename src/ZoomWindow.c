@@ -309,7 +309,13 @@ void zoomimage_receive(DictionaryIterator *iter)
 				DEBUG_MSG( "Running GBitmap Create");
 
 
-				nt_Free(zoomctx->data);
+				if(!zoomctx->data){
+					DEBUG_MSG( "in if statement");
+					nt_Free(zoomctx->data);
+				}
+				DEBUG_MSG( "after zoomctx free");
+
+
 				if (bitmap)
 				{
 
