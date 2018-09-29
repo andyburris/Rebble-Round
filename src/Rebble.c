@@ -417,6 +417,7 @@ void free_netimage()
 	}
 }
 
+
 /*******************************
     Zoom Image
 ********************************/
@@ -500,6 +501,15 @@ inline void windows_create()
 		.unload = thread_window_unload,
 	});
 
+	window_zoom = window_create();
+	window_set_window_handlers(window_zoom, (WindowHandlers)
+	{
+		.load = zoom_window_load,
+		.appear = zoom_window_appear,
+		.disappear = zoom_window_disappear,
+		.unload = zoom_window_unload,
+	});
+
 	window_threadmenu = window_create();
 	window_set_window_handlers(window_threadmenu, (WindowHandlers)
 	{
@@ -527,6 +537,7 @@ inline void windows_destroy()
 	window_destroy(window_loading);
 	window_destroy(window_subredditlist);
 	window_destroy(window_thread);
+	window_destroy(window_zoom);
 	window_destroy(window_threadmenu);
 	window_destroy(window_subreddit);
 	window_destroy(window_comment);

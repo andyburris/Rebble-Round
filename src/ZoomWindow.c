@@ -10,7 +10,7 @@
 #include "ThreadMenuWindow.h"
 #include "CommentWindow.h"
 
-Window *zoom_window;
+Window *window_zoom;
 
 GSize zoom_layer_size;
 
@@ -27,6 +27,7 @@ static void zoom_button_select(ClickRecognizerRef recognizer, void *context);
 static void zoom_button_down(ClickRecognizerRef recognizer, void *context);
 //static void zoom_load();
 static void zoom_window_init();
+//static void zoom_window_load(Window *window);
 
 
 void zoom_load()
@@ -42,16 +43,30 @@ void zoom_load()
 
 void zoom_load_finished()
 {
+	DEBUG_MSG("zoom_load_finished");
+
 	if(loading_visible())
 	{
+		DEBUG_MSG("loading_visible");
+
 		loading_uninit();
+		DEBUG_MSG("after loading_uninit");
+
+		//zoom_window_load(window_zoom);
+
+		DEBUG_MSG("after zoom_window_load");
+
 		zoom_window_init();
+
+
 	}
 }
 
 void zoom_window_init()
 {
-	window_stack_push(zoom_window, true);
+	window_stack_push(window_zoom, true);
+	DEBUG_MSG("after stack push");
+
 }
 
 void zoom_window_load(Window *window)
@@ -110,13 +125,18 @@ void zoom_window_unload(Window *window)
 {
 	DEBUG_MSG("zoom_window_unload");
 
-	free_netimage();
+	free_zoomimage();
+
+	DEBUG_MSG("image context freed");
+
 
 	if (image != NULL)
 	{
 		gbitmap_destroy(image);
 		image = NULL;
 	}
+
+	DEBUG_MSG("image freed");
 
 
 	if(zoom_bitmap_layer != NULL)
@@ -125,12 +145,21 @@ void zoom_window_unload(Window *window)
 		zoom_bitmap_layer = NULL;
 	}
 
+	DEBUG_MSG("bitmap layer freed");
+
+
 	scroll_layer_destroy(image_pan_layer);
+
+	DEBUG_MSG("pan layer freed");
+
 }
 
 
 void zoom_display_image(GBitmap *inputimage)
 {
+
+	DEBUG_MSG("zoom_display_image");
+
 	if(inputimage == NULL)
 	{
 		loading_disable_dots();
@@ -138,7 +167,13 @@ void zoom_display_image(GBitmap *inputimage)
 		return;
 	}
 
+	DEBUG_MSG("after null check");
+
+
 	zoom_load_finished();
+
+	DEBUG_MSG("load_finished");
+
 
 	if (image)
 	{
@@ -146,7 +181,13 @@ void zoom_display_image(GBitmap *inputimage)
 		DEBUG_MSG("gbitmap_destroy 1");
 	}
 
+	DEBUG_MSG("destroyed old image");
+
+
 	image = inputimage;
+
+	DEBUG_MSG("set to input");
+
 
 	if(zoom_bitmap_layer == NULL)
 	{
@@ -264,6 +305,10 @@ void zoomimage_receive(DictionaryIterator *iter)
 				#else
 					GBitmap *bitmap = gbitmap_create_from_png_data(zoomctx->data, zoomctx->length);
 				#endif
+
+				DEBUG_MSG( "Running GBitmap Create");
+
+
 				nt_Free(zoomctx->data);
 				if (bitmap)
 				{

@@ -48,7 +48,7 @@ function convertImage(rgbaPixels, numComponents, width, height, zoom){
     ratio = Math.min(144 / width,168 / height);
     ratio = Math.min(ratio,1);
   }else{
-    ratio = 168/height;
+    ratio = /*336*/168/height;
     ratio = Math.min(ratio,1);
   }
 

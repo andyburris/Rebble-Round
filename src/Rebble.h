@@ -107,6 +107,7 @@ struct ViewThreadData
 extern Window *window_subreddit;
 extern Window *window_subredditlist;
 extern Window *window_thread;
+extern Window *window_zoom;
 extern Window *window_threadmenu;
 extern Window *window_loading;
 extern Window *window_comment;
