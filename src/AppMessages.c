@@ -396,6 +396,8 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 					return;
 				}
 
+				//TODO: get amount of unallocated memory availible, send that amount to watch, reload if need more ("Read More"?)
+
 				text_layer_set_text(thread_body_layer, current_thread.body);
 
 				APP_LOG(APP_LOG_LEVEL_DEBUG, "Short post body layer set");
