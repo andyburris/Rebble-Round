@@ -153,6 +153,10 @@ void thread_window_load(Window *window)
 
 		scroll_layer_set_paging(thread_scroll_layer, true);
 
+
+		text_layer_set_text_alignment(thread_body_layer, GTextAlignmentCenter);
+		//text_layer_set_overflow_mode(thread_body_layer, GTextOverflowModeWordWrap);
+
 			/*s_indicator = scroll_layer_get_content_indicator(comment_scroll_layer);
 
 			s_indicator_up_layer = layer_create(GRect(0,0,bounds.size.w, STATUS_BAR_LAYER_HEIGHT));
