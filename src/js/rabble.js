@@ -48,7 +48,7 @@ function convertImage(rgbaPixels, numComponents, width, height, zoom){
     ratio = Math.min(144 / width,168 / height);
     ratio = Math.min(ratio,1);
   }else{
-    ratio = /*336*/168/height;
+    ratio = Math.min(288 / width,336 / height);
     ratio = Math.min(ratio,1);
   }
 
@@ -61,16 +61,15 @@ function convertImage(rgbaPixels, numComponents, width, height, zoom){
   if(!color){
     var grey_pixels = greyScale(rgbaPixels, width, height, numComponents);
     ScaleRect(final_pixels, grey_pixels, width, height, final_width, final_height, 1);
-    if(!zoom){
       floydSteinberg(final_pixels, final_width, final_height, pebble_nearest_color_to_black_white);
-    }
+
     bitmap = toPBI(final_pixels, final_width, final_height);
   }
   else {
     ScaleRect(final_pixels, rgbaPixels, width, height, final_width, final_height, numComponents);
-    if(!zoom){
+
       floydSteinberg(final_pixels, final_width, final_height, pebble_nearest_color_to_pebble_palette);
-    }
+
     var png = generatePngForPebble(final_width, final_height, final_pixels);
     for(var i=0; i<png.length; i++){
       bitmap.push(png.charCodeAt(i));

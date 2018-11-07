@@ -814,7 +814,8 @@ Pebble.addEventListener("ready", function(e)
 
 Pebble.addEventListener("appmessage", function(e)
 {
-	//console.log(JSON.stringify(e.payload));
+	console.log("received appmessages");
+	console.log(JSON.stringify(e.payload));
 try
 {
 	if("chunk_size" in e.payload)
@@ -1037,7 +1038,7 @@ function LoadImageComments(dir)
 
 function SendImage(url, chunkSize, zoom)
 {
-	//console.log("SendImage: " + chunkSize);
+	console.log("SendImage: " + chunkSize);
 
 	if(chunkSize === 0)
 	{

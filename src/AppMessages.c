@@ -86,6 +86,8 @@ static void in_received_handler(DictionaryIterator *iter, void *context)
 
 	if(ready_tuple)
 	{
+		DEBUG_MSG("JS ready");
+
 		if(ready_tuple->value->uint8 == 2)
 		{
 			refreshSubreddit = true;
